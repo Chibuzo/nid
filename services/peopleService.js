@@ -31,7 +31,7 @@ const fetchPersonData = async (personId) => {
         return res.resposne.data;
     } catch (err) {
         console.log(err);
-        const code = err.response.status || 400;
+        const code = err.response && err.response.status || 400;
         const message = err.response.statusText || 'Unable to fetch data';
         throw new ErrorHandler(code, message)
     }
