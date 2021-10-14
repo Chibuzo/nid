@@ -19,8 +19,8 @@ const fetchPersonData = async (personId) => {
     try {
         const res = await axios({
             method: 'get',
-            url: '/service',
-            baseURL: 'http://10.80.0.10:70/api/',
+            url: '/apiService.svc',
+            baseURL: 'http://10.80.0.10:8088/',
             params: {
                 id: personId,
                 key: 'AAD075138F'
@@ -28,11 +28,11 @@ const fetchPersonData = async (personId) => {
         });
 
         console.log(res)
-        return res.resposne.data;
+        return res.response.data;
     } catch (err) {
         console.log(err);
         const code = err.response && err.response.status || 400;
-        const message = err.response.statusText || 'Unable to fetch data';
+        const message = err.response && err.response.statusText || 'Unable to fetch data';
         throw new ErrorHandler(code, message)
     }
 }
