@@ -19,10 +19,10 @@ const fetchPersonData = async (personId) => {
     try {
         const res = await axios({
             method: 'get',
-            url: '/apiService.svc',
+            url: '/apiService.svc/GetPersonByID',
             baseURL: 'http://10.80.0.10:8088/',
             params: {
-                id: personId,
+                idNumber: personId,
                 key: 'AAD075138F'
             }
         });
