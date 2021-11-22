@@ -1,6 +1,7 @@
 /node_modules
 
 /instantclient_19_10
+/instantclient_21_3
 
 package-lock.json
 
