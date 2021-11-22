@@ -1,5 +1,5 @@
 const routes = require('express').Router();
-const { fetchPersonData } = require('../services/peopleService');
+const { fetchAndUpdatePersonData } = require('../services/peopleService');
 
 routes.get('/:person_id', async (req, res) => {
     try {
