@@ -27,8 +27,7 @@ const fetchPersonData = async (personId) => {
             }
         });
 
-        console.log(res)
-        return res.response.data;
+        return JSON.parse(res.data);
     } catch (err) {
         console.log(err);
         const code = err.response && err.response.status || 400;
