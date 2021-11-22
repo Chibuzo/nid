@@ -47,7 +47,7 @@ const fetchPersonData = async (personId) => {
 
 const savePersonData = async ({ IDNumber, IdCollected, Status, Surname, FirstName, MiddleName, SexCode, BirthDate, DeathDate, NationalityCode, Nationality, Sex }) => {
     const sql = `INSERT INTO NID_TEMP 
-                    (IDNUMBER, IDCOLLECTED, STATUS, SURNAME, FIRSTNAME, MIDDLENAME, SEXCODE, BIRTHDATE, DEATHDATE, NATIONALITYCODE, NATIONALITY, SEX
+                    ('IDNUMBER', 'IDCOLLECTED', 'STATUS', 'SURNAME', 'FIRSTNAME', 'MIDDLENAME', 'SEXCODE', 'BIRTHDATE', 'DEATHDATE', 'NATIONALITYCODE', 'NATIONALITY', 'SEX'
                 VALUES(?,?,?,?,?,?,?,?,?,?,?,?)`;
 
     const params = [IDNumber, IdCollected, Status, Surname, FirstName, MiddleName, SexCode, BirthDate, DeathDate, NationalityCode, Nationality, Sex];

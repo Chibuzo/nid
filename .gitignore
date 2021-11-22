@@ -1,9 +1,10 @@
 /node_modules
 
-/instantclient_21_3
+/instantclient_19_10
 
 package-lock.json
 
 .env
+.gitignore
 
 /config
