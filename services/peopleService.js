@@ -15,6 +15,15 @@ const queryTest = async () => {
     console.log(result.rows)
 };
 
+const fetchAndUpdatePersonData = async personId => {
+    const personData = await fetchPersonData(personId);
+    const result = await savePersonData(personData);
+    if (!result.rows) {
+        throw new ErrorHandler(400, 'Couldn\'t save retrieved data');
+    }
+    //return updatePersonRecord(personData);
+}
+
 const fetchPersonData = async (personId) => {
     try {
         const res = await axios({
@@ -36,7 +45,28 @@ const fetchPersonData = async (personId) => {
     }
 }
 
+const savePersonData = async ({ IDNumber, IdCollected, Status, Surname, FirstName, MiddleName, SexCode, BirthDate, DeathDate, NationalityCode, Nationality, Sex }) => {
+    const sql = `INSERT INTO NID_TEMP 
+                    (IDNUMBER, IDCOLLECTED, STATUS, SURNAME, FIRSTNAME, MIDDLENAME, SEXCODE, BIRTHDATE, DEATHDATE, NATIONALITYCODE, NATIONALITY, SEX
+                VALUES(?,?,?,?,?,?,?,?,?,?,?,?)`;
+
+    const params = [IDNumber, IdCollected, Status, Surname, FirstName, MiddleName, SexCode, BirthDate, DeathDate, NationalityCode, Nationality, Sex];
+    const db = await getConnection();
+    const result = await db.execute(sql, params);
+    console.log({ result })
+    return result;
+}
+
+const updatePersonRecord = async data => {
+    const sql = `UPDATE PERSONS SET
+    
+                WHERE national_identity = :nid`;
+
+    const db = await getConnection();
+    const result = await db.execute(sql, [data.IDNumber]);
+}
+
 
 module.exports = {
-    fetchPersonData,
+    fetchAndUpdatePersonData,
 }
