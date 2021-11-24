@@ -10,14 +10,14 @@ const db = (() => {
         async getConnection() {
             try {
                 if (!connection) {
-                    oracleDb.initOracleClient({ libDir: 'C:\\nid\\instantclient_21_3' });
+                    oracleDb.initOracleClient({ libDir: 'C:\\nid\\instantclient_19_10' });
                     connection = await oracleDb.getConnection(config[process.env.NODE_ENV]);
                     console.log('Connected!');
                 }
                 return connection;
             } catch (err) {
                 console.log(err);
-                return null;
+                throw new Error('Unable to connect to database');
             }
         }
     }

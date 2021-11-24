@@ -16,12 +16,16 @@ const queryTest = async () => {
 };
 
 const fetchAndUpdatePersonData = async personId => {
+    const person = await findPerson(personId);
+    if (person) {
+        return fetchUpdatedRecord(personId);
+    }
     const personData = await fetchPersonData(personId);
     const result = await savePersonData(personData);
-    if (!result.rows) {
+    if (!result.lastRowid) {
         throw new ErrorHandler(400, 'Couldn\'t save retrieved data');
     }
-    //return updatePersonRecord(personData);
+    return updatePersonRecord(personData);
 }
 
 const fetchPersonData = async (personId) => {
@@ -46,15 +50,25 @@ const fetchPersonData = async (personId) => {
 }
 
 const savePersonData = async ({ IDNumber, IdCollected, Status, Surname, FirstName, MiddleName, SexCode, BirthDate, DeathDate, NationalityCode, Nationality, Sex }) => {
-    const sql = `INSERT INTO NID_TEMP 
-                    ('IDNUMBER', 'IDCOLLECTED', 'STATUS', 'SURNAME', 'FIRSTNAME', 'MIDDLENAME', 'SEXCODE', 'BIRTHDATE', 'DEATHDATE', 'NATIONALITYCODE', 'NATIONALITY', 'SEX'
-                VALUES(?,?,?,?,?,?,?,?,?,?,?,?)`;
+    const sql = `INSERT INTO HR.NID_TEMP
+                VALUES(:idnumber, :idcollection, :status, :surname, :firstname, :middlename, :sexcode, TO_DATE(:birthdate, 'DD/MM/YYYY'), TO_DATE(:deathdate, 'DD/MM/YYYY'), :nationalitycode, :nationality, :sex)`;
 
     const params = [IDNumber, IdCollected, Status, Surname, FirstName, MiddleName, SexCode, BirthDate, DeathDate, NationalityCode, Nationality, Sex];
     const db = await getConnection();
-    const result = await db.execute(sql, params);
-    console.log({ result })
+    const result = await db.execute(sql, params, { autoCommit: true });
     return result;
+}
+
+const findPerson = async personID => {
+    const db = await getConnection();
+    const result = await db.execute('SELECT IDNUMBER FROM HR.NID_TEMP WHERE IDNUMBER = :idnumber', [personID]);
+    return result.rows;
+}
+
+const fetchUpdatedRecord = async personId => {
+    const db = await getConnection();
+    const result = await db.execute('SELECT * FROM HR.PER_ALL_PEOPLE_F WHERE NATIONAL_IDENTIFIER = :idnumber', [personID]);
+    return result.rows[0];
 }
 
 const updatePersonRecord = async data => {
