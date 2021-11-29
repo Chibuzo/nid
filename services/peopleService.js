@@ -63,10 +63,10 @@ const fetchPersonData = async (personId) => {
 
         if (!res.data.Status) return JSON.parse(res.data);
     } catch (err) {
-        console.log(err);
+        console.log(err.response || 'error');
         const code = err.response && err.response.status || 400;
         const message = err.response && err.response.statusText || 'Unable to fetch data';
-        throw new ErrorHandler(code, message)
+        // throw new ErrorHandler(code, message)
     }
 }
 
