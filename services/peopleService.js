@@ -25,7 +25,7 @@ const fetchAndUpdatePersonData = async personId => {
 
         fetchedData = await Promise.all(records.map(record => fetchPersonData(record.NID)));
         try {
-            saveFetchedData(fetchedData);
+            saveFetchedData(db, fetchedData);
         } catch (err) {
 
         }
