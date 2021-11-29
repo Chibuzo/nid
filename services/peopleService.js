@@ -75,7 +75,13 @@ const savePersonData = async (db, { IDNumber, IdCollected, Status, Surname, Firs
                 VALUES(:idnumber, :idcollection, :status, :surname, :firstname, :middlename, :sexcode, TO_DATE(:birthdate, 'DD/MM/YYYY'), TO_DATE(:deathdate, 'DD/MM/YYYY'), :nationalitycode, :nationality, :sex)`;
 
     const params = [IDNumber, IdCollected, Status, Surname, FirstName, MiddleName, SexCode, BirthDate, DeathDate, NationalityCode, Nationality, Sex];
-    return db.execute(sql, params, { autoCommit: true });
+    try {
+        const result = await db.execute(sql, params, { autoCommit: true });
+        return result;
+    } catch (err) {
+
+    }
+    return null;
 }
 
 const saveFetchedData = async (db, data) => {
