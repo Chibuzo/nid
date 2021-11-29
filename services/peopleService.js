@@ -29,6 +29,7 @@ const fetchAndUpdatePersonData = async personId => {
         } catch (err) {
 
         }
+        console.log('Batch:' + i);
     }
     // const sql = `UPDATE HR.PER_ALL_PEOPLE_F SET
     //                 ATTRIBUTE10 = 'unverified',
