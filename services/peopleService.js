@@ -30,6 +30,7 @@ const fetchAndUpdatePersonData = async personId => {
 
         }
         console.log('Batch:' + i);
+        break;
     }
     // const sql = `UPDATE HR.PER_ALL_PEOPLE_F SET
     //                 ATTRIBUTE10 = 'unverified',
@@ -80,8 +81,9 @@ const savePersonData = async (db, { IDNumber, IdCollected, Status, Surname, Firs
 
 const saveFetchedData = async (db, data) => {
     return Promise.all(data.map(d => {
-        updatePersonRecord(db, d.IDNumber, d.DeathDate);
-        savePersonData(db, d);
+        console.log({ d })
+        // updatePersonRecord(db, d.IDNumber, d.DeathDate);
+        // savePersonData(db, d);
     }));
 }
 
@@ -92,7 +94,7 @@ const findPerson = async personID => {
 }
 
 const fetchPeoplesRecord = async (db, offset) => {
-    const result = await db.execute("SELECT NATIONAL_IDENTIFIER nid FROM HR.PER_ALL_PEOPLE_F OFFSET :offset ROWS FETCH NEXT :limit ROWS ONLY", [offset, 200]);
+    const result = await db.execute("SELECT NATIONAL_IDENTIFIER nid FROM HR.PER_ALL_PEOPLE_F OFFSET :offset ROWS FETCH NEXT :limit ROWS ONLY", [offset, 10]);
     return result.rows;
 }
 
