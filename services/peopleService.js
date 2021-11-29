@@ -62,7 +62,7 @@ const fetchPersonData = async (personId) => {
             }
         });
 
-        if (!res.data.Status) JSON.parse(res.data);
+        if (!res.data.Status) return JSON.parse(res.data);
     } catch (err) {
         console.log(err);
         const code = err.response && err.response.status || 400;
