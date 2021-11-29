@@ -27,7 +27,7 @@ const fetchAndUpdatePersonData = async personId => {
         try {
             saveFetchedData(db, fetchedData);
         } catch (err) {
-
+            continue
         }
         console.log('Batch:' + i);
     }
@@ -105,7 +105,7 @@ const fetchUpdatedRecord = async personId => {
 const updatePersonRecord = async (db, nid, death_date = null) => {
     const sql = `UPDATE HR.PER_ALL_PEOPLE_F SET
                     ATTRIBUTE10 = 'verified',
-                    DATE_OF_DEATH = :date_of_death
+                    DATE_OF_DEATH = TO_DATE(:date_of_death, 'DD/MM/YYYY')
                 WHERE NATIONAL_IDENTIFIER = :nid`;
 
     const result = await db.execute(sql, [death_date, nid], { autoCommit: true });
