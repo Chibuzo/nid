@@ -20,13 +20,21 @@ const fetchAndUpdatePersonData = async personId => {
     const result = await db.execute("SELECT COUNT(*) num FROM HR.PER_ALL_PEOPLE_F");
 
     let fetchedData = [];
-    for (let i = 0; i < result.rows[0].NUM + 100; i += 100) {
+    for (let i = 0; i < result.rows[0].NUM; i += 100) {
         const records = await fetchPeoplesRecord(db, i);
 
         fetchedData = await Promise.all(records.map(record => fetchPersonData(record.NID)));
-        console.log({ fetchedData })
-        //saveFetchedData(fetchedData);
+        try {
+            saveFetchedData(fetchedData);
+        } catch (err) {
+
+        }
     }
+    // const sql = `UPDATE HR.PER_ALL_PEOPLE_F SET
+    //                 ATTRIBUTE10 = 'unverified',
+    //             WHERE ATTRIBUTE10 <> 'verified'`;
+
+    // await db.execute(sql, { autoCommit: true });
 
     // const person = await findPerson(personId);
     // if (person) {
@@ -52,7 +60,7 @@ const fetchPersonData = async (personId) => {
             }
         });
 
-        return JSON.parse(res.data);
+        if (!res.data.Status) JSON.parse(res.data);
     } catch (err) {
         console.log(err);
         const code = err.response && err.response.status || 400;
