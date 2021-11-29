@@ -16,16 +16,28 @@ const queryTest = async () => {
 };
 
 const fetchAndUpdatePersonData = async personId => {
-    const person = await findPerson(personId);
-    if (person) {
-        return fetchUpdatedRecord(personId);
+    const db = await getConnection();
+    const result = await db.execute("SELECT COUNT(*) num FROM HR.PER_ALL_PEOPLE_F");
+
+    let fetchedData = [];
+    for (let i = 0; i < result.rows[0].NUM + 100; i += 100) {
+        const records = await fetchPeoplesRecord(db, i);
+
+        fetchedData = await Promise.all(records.map(record => fetchPersonData(record.NID)));
+        console.log({ fetchedData })
+        //saveFetchedData(fetchedData);
     }
-    const personData = await fetchPersonData(personId);
-    const result = await savePersonData(personData);
-    if (!result.lastRowid) {
-        throw new ErrorHandler(400, 'Couldn\'t save retrieved data');
-    }
-    return updatePersonRecord(personData);
+
+    // const person = await findPerson(personId);
+    // if (person) {
+    //     return fetchUpdatedRecord(personId);
+    // }
+    // const personData = await fetchPersonData(personId);
+    // const result = await savePersonData(personData);
+    // if (!result.lastRowid) {
+    //     throw new ErrorHandler(400, 'Couldn\'t save retrieved data');
+    // }
+    // return updatePersonRecord(personData);
 }
 
 const fetchPersonData = async (personId) => {
@@ -49,19 +61,29 @@ const fetchPersonData = async (personId) => {
     }
 }
 
-const savePersonData = async ({ IDNumber, IdCollected, Status, Surname, FirstName, MiddleName, SexCode, BirthDate, DeathDate, NationalityCode, Nationality, Sex }) => {
+const savePersonData = async (db, { IDNumber, IdCollected, Status, Surname, FirstName, MiddleName, SexCode, BirthDate, DeathDate, NationalityCode, Nationality, Sex }) => {
     const sql = `INSERT INTO HR.NID_TEMP
                 VALUES(:idnumber, :idcollection, :status, :surname, :firstname, :middlename, :sexcode, TO_DATE(:birthdate, 'DD/MM/YYYY'), TO_DATE(:deathdate, 'DD/MM/YYYY'), :nationalitycode, :nationality, :sex)`;
 
     const params = [IDNumber, IdCollected, Status, Surname, FirstName, MiddleName, SexCode, BirthDate, DeathDate, NationalityCode, Nationality, Sex];
-    const db = await getConnection();
-    const result = await db.execute(sql, params, { autoCommit: true });
-    return result;
+    return db.execute(sql, params, { autoCommit: true });
+}
+
+const saveFetchedData = async (db, data) => {
+    return Promise.all(data.map(d => {
+        updatePersonRecord(db, d.IDNumber, d.DeathDate);
+        savePersonData(db, d);
+    }));
 }
 
 const findPerson = async personID => {
     const db = await getConnection();
     const result = await db.execute('SELECT IDNUMBER FROM HR.NID_TEMP WHERE IDNUMBER = :idnumber', [personID]);
+    return result.rows;
+}
+
+const fetchPeoplesRecord = async (db, offset) => {
+    const result = await db.execute("SELECT NATIONAL_IDENTIFIER nid FROM HR.PER_ALL_PEOPLE_F OFFSET :offset ROWS FETCH NEXT :limit ROWS ONLY", [offset, 200]);
     return result.rows;
 }
 
@@ -71,13 +93,13 @@ const fetchUpdatedRecord = async personId => {
     return result.rows[0];
 }
 
-const updatePersonRecord = async data => {
-    const sql = `UPDATE PERSONS SET
-    
-                WHERE national_identity = :nid`;
+const updatePersonRecord = async (db, nid, death_date = null) => {
+    const sql = `UPDATE HR.PER_ALL_PEOPLE_F SET
+                    ATTRIBUTE10 = 'verified',
+                    DATE_OF_DEATH = :date_of_death
+                WHERE NATIONAL_IDENTIFIER = :nid`;
 
-    const db = await getConnection();
-    const result = await db.execute(sql, [data.IDNumber]);
+    const result = await db.execute(sql, [death_date, nid], { autoCommit: true });
 }
 
 
