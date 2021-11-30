@@ -88,7 +88,7 @@ const savePersonData = async (db, { IDNumber, IdCollected, Status, Surname, Firs
 
 const saveFetchedData = async (db, data) => {
     return Promise.all(data.map(d => {
-        if (d.IDNumber) {
+        if (d && d.IDNumber) {
             updatePersonRecord(db, d.IDNumber, d.DeathDate);
             savePersonData(db, d);
         }
