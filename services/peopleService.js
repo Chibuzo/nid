@@ -20,7 +20,7 @@ const fetchAndUpdatePersonData = async personId => {
     const result = await db.execute("SELECT COUNT(*) num FROM HR.PER_ALL_PEOPLE_F");
 
     let fetchedData = [];
-    for (let i = 796; i < result.rows[0].NUM; i += 200) {
+    for (let i = 14196; i < result.rows[0].NUM; i += 200) {
         const records = await fetchPeoplesRecord(db, i);
 
         fetchedData = await Promise.all(records.map(record => fetchPersonData(record.NID)));
