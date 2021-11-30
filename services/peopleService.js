@@ -50,23 +50,25 @@ const fetchAndUpdatePersonData = async personId => {
 }
 
 const fetchPersonData = async (personId) => {
-    try {
-        const res = await axios({
-            method: 'get',
-            url: '/apiService.svc/GetPersonByID',
-            baseURL: 'http://10.80.0.10:8088/',
-            params: {
-                idNumber: personId,
-                key: 'AAD075138F'
-            }
-        });
+    if (personId) {
+        try {
+            const res = await axios({
+                method: 'get',
+                url: '/apiService.svc/GetPersonByID',
+                baseURL: 'http://10.80.0.10:8088/',
+                params: {
+                    idNumber: personId,
+                    key: 'AAD075138F'
+                }
+            });
 
-        if (!res.data.Status) return JSON.parse(res.data);
-    } catch (err) {
-        console.log(err.response || 'error');
-        const code = err.response && err.response.status || 400;
-        const message = err.response && err.response.statusText || 'Unable to fetch data';
-        // throw new ErrorHandler(code, message)
+            if (!res.data.Status) return JSON.parse(res.data);
+        } catch (err) {
+            console.log(err.response || 'error');
+            const code = err.response && err.response.status || 400;
+            const message = err.response && err.response.statusText || 'Unable to fetch data';
+            // throw new ErrorHandler(code, message)
+        }
     }
 }
 
@@ -86,8 +88,10 @@ const savePersonData = async (db, { IDNumber, IdCollected, Status, Surname, Firs
 
 const saveFetchedData = async (db, data) => {
     return Promise.all(data.map(d => {
-        updatePersonRecord(db, d.IDNumber, d.DeathDate);
-        savePersonData(db, d);
+        if (d.IDNumber) {
+            updatePersonRecord(db, d.IDNumber, d.DeathDate);
+            savePersonData(db, d);
+        }
     }));
 }
 
