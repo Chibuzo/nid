@@ -1,8 +1,10 @@
 const express = require('express');
 const app = express();
 require('dotenv').config();
+const cron = require('node-cron');
 const apiRoutes = require('./routes');
 const { handleError, ErrorHandler } = require('./helpers/errorHandler');
+const { verifyNewRecords } = require('./services/peopleService');
 
 app.use(express.json());
 
@@ -27,4 +29,14 @@ app.set('port', process.env.PORT);
 
 app.listen(app.get('port'), () => {
     console.log('App listening on port ' + process.env.PORT);
+
+    // Cron job scheduled to run at 6am everyday
+    cron.schedule('* * * * *', function () {
+        try {
+            verifyNewRecords();
+            console.log('Records verified');
+        } catch (err) {
+            console.log(err)
+        }
+    });
 });
