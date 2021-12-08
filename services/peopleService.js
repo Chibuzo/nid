@@ -138,7 +138,7 @@ const updatePersonRecord = async (db, person) => {
 }
 
 const findRecentlyAddedEmployees = async db => {
-    // const sql = `SELECT ${fields} FROM HR.PER_ALL_PEOPLE_F WHERE TO_CHAR(sysdate - 1) = TO_CHAR(EFFECTIVE_START_DATE)`;
+    // const sql = `SELECT ${fields} FROM HR.PER_ALL_PEOPLE_F WHERE TO_CHAR(TO_DATE(sysdate - 1, 'DD-MON-YY')) = TO_CHAR(EFFECTIVE_START_DATE)`;
     const sql = `SELECT ${fields} FROM HR.PER_ALL_PEOPLE_F FETCH NEXT 3 ROWS ONLY`;
     const result = await db.execute(sql);
     return result.rows;
@@ -168,31 +168,34 @@ const modifyRecord = async (db, newRecord) => {
     const { IDNumber } = newRecord;
 
     const old_record_criteria = "NATIONAL_IDENTIFIER = :nid AND EFFECTIVE_END_DATE >= sysdate";
-    const sql = `INSERT INTO HR.PER_ALL_PEOPLE_F 
+    const sql = `INSERT INTO HR.PER_ALL_PEOPLE_ERROR 
                     SELECT * FROM HR.PER_ALL_PEOPLE_F
                     WHERE ${old_record_criteria}`;
 
     const result = await db.execute(sql, [IDNumber], { autoCommit: true });
+    console.log('inserted')
 
     // obsolete old record
-    await db.execute(`UPDATE HR.PER_ALL_PEOPLE_F SET 
-                        EFFECTIVE_END_DATE = TO_DATE(sysdate, 'DD-MM-'YY')
-                    WHERE ${old_record_criteria}`, { autoCommit: true });
+    await db.execute(`UPDATE HR.PER_ALL_PEOPLE_ERROR SET 
+                        EFFECTIVE_END_DATE = TO_DATE(sysdate, 'DD-MON-'YY')
+                    WHERE ${old_record_criteria}`, [IDNumber], { autoCommit: true });
+    console.log('updated old!')
 
-    // update new record
+    // update record
     const params = [Surname, FirstName, MiddleName, BirthDate, DeathDate, IDNumber] = newRecord;
     const query = `UPDATE HR.PER_ALL_PEOPLE_F SET
                     LAST_NAME = :lastname,
                     FIRST_NAME = :firstname,
                     MIDDLE_NAMES = :middlename,
-                    DATE_OF_BIRTH = TO_DATE(:birthdate, 'DD-MM-YY'),
-                    EFFECTIVE_START_DATE = TO_DATE((sysdate + 1), 'DD-MM-YY'),
-                    EFFECTIVE_END_DATE = TO_DATE(:end_date, 'DD-MM-YY'),
+                    DATE_OF_BIRTH = TO_DATE(:birthdate, 'DD-MON-YY'),
+                    EFFECTIVE_START_DATE = TO_DATE((sysdate + 1), 'DD-MON-YY'),
+                    EFFECTIVE_END_DATE = TO_DATE('31-DEC-12'),
                     ATTRIBUTE10 = 'verified',
-                    DATE_OF_DEATH = TO_DATE(:date_of_death, 'DD-MM-YY')
-                WHERE NATIONAL_IDENTIFIER = :nid AND rowid = '${result.lastRowid}'`;
+                    DATE_OF_DEATH = TO_DATE(:date_of_death, 'DD-MON-YY')
+                WHERE ${old_record_criteria}`;
 
     await db.execute(query, params, { autoCommit: true });
+    console.log('update new')
 }
 
 
