@@ -158,15 +158,13 @@ const verifyNewRecords = async () => {
         const { Surname, FirstName, MiddleName, BirthDate } = data;
         const { FIRST_NAME, LAST_NAME, MIDDLE_NAMES, DATE_OF_BIRTH } = records.find(record => record.NID == data.IDNumber);
         if (Surname != LAST_NAME || FirstName != FIRST_NAME || MiddleName != MIDDLE_NAMES || BirthDate != DATE_OF_BIRTH) {
-            console.log('change')
             modifyRecord(db, data);
         }
     });
 }
 
 const modifyRecord = async (db, newRecord) => {
-    console.log('here')
-    const { IDNumber } = newRecord;
+    const { IDNumber, Surname, FirstName, MiddleName, BirthDate, DeathDate } = newRecord;
 
     const old_record_criteria = "NATIONAL_IDENTIFIER = :nid AND EFFECTIVE_END_DATE >= sysdate";
     const sql = `INSERT INTO HR.PER_ALL_PEOPLE_ERROR 
@@ -174,23 +172,22 @@ const modifyRecord = async (db, newRecord) => {
                     WHERE ${old_record_criteria}`;
 
     const result = await db.execute(sql, [IDNumber], { autoCommit: true });
-    console.log('inserted')
 
     // obsolete old record
     await db.execute(`UPDATE HR.PER_ALL_PEOPLE_ERROR SET 
-                        EFFECTIVE_END_DATE = TO_DATE(sysdate, 'DD-MON-'YY')
+                        EFFECTIVE_END_DATE = TO_DATE(sysdate, 'DD-MON-YY')
                     WHERE ${old_record_criteria}`, [IDNumber], { autoCommit: true });
     console.log('updated old!')
 
     // update record
-    const params = [Surname, FirstName, MiddleName, BirthDate, DeathDate, IDNumber] = newRecord;
+    const params = [Surname, FirstName, MiddleName, BirthDate, DeathDate, IDNumber];
     const query = `UPDATE HR.PER_ALL_PEOPLE_F SET
                     LAST_NAME = :lastname,
                     FIRST_NAME = :firstname,
                     MIDDLE_NAMES = :middlename,
                     DATE_OF_BIRTH = TO_DATE(:birthdate, 'DD-MON-YY'),
                     EFFECTIVE_START_DATE = TO_DATE((sysdate + 1), 'DD-MON-YY'),
-                    EFFECTIVE_END_DATE = TO_DATE('31-DEC-12'),
+                    EFFECTIVE_END_DATE = TO_DATE('31-DEC-12', 'DD-MON-YY'),
                     ATTRIBUTE10 = 'verified',
                     DATE_OF_DEATH = TO_DATE(:date_of_death, 'DD-MON-YY')
                 WHERE ${old_record_criteria}`;
