@@ -83,7 +83,7 @@ const fetchPersonData = async (personId) => {
 
 const savePersonData = async (db, { IDNumber, IdCollected, Status, Surname, FirstName, MiddleName, SexCode, BirthDate, DeathDate, NationalityCode, Nationality, Sex }) => {
     const sql = `INSERT INTO HR.NID_TEMP
-                VALUES(:idnumber, :idcollection, :status, :surname, :firstname, :middlename, :sexcode, TO_DATE(:birthdate, 'DD/MM/YYYY'), TO_DATE(:deathdate, 'DD/MM/YYYY'), :nationalitycode, :nationality, :sex)`;
+                VALUES(:idnumber, :idcollection, :status, :surname, :firstname, :middlename, :sexcode, TO_DATE(:birthdate, 'DD-MON-YY'), TO_DATE(:deathdate, 'DD-MON-YY'), :nationalitycode, :nationality, :sex)`;
 
     const params = [IDNumber, IdCollected, Status, Surname, FirstName, MiddleName, SexCode, BirthDate, DeathDate, NationalityCode, Nationality, Sex];
     try {
@@ -131,7 +131,7 @@ const updatePersonRecord = async (db, person) => {
                     MIDDLE_NAMES = :middlename,
                     DATE_OF_BIRTH = TO_DATE(:birthdate),
                     ATTRIBUTE10 = 'verified',
-                    DATE_OF_DEATH = TO_DATE(:date_of_death, 'DD/MM/YYYY')
+                    DATE_OF_DEATH = TO_DATE(:date_of_death, 'DD-MON-YY')
                 WHERE NATIONAL_IDENTIFIER = :nid`;
 
     const result = await db.execute(sql, params, { autoCommit: true });
@@ -166,7 +166,7 @@ const verifyNewRecords = async () => {
 const modifyRecord = async (db, newRecord) => {
     const { IDNumber, Surname, FirstName, MiddleName, BirthDate, DeathDate } = newRecord;
 
-    const old_record_criteria = "NATIONAL_IDENTIFIER = :nid AND EFFECTIVE_END_DATE >= sysdate";
+    const old_record_criteria = "NATIONAL_IDENTIFIER = :nid AND TO_CHAR(EFFECTIVE_END_DATE) >= TO_CHAR(TO_DATE(sysdate, 'DD-MON-YY'))";
     const sql = `INSERT INTO HR.PER_ALL_PEOPLE_ERROR 
                     SELECT * FROM HR.PER_ALL_PEOPLE_F
                     WHERE ${old_record_criteria}`;
@@ -180,16 +180,15 @@ const modifyRecord = async (db, newRecord) => {
     console.log('updated old!')
 
     // update record
-    const params = [Surname, FirstName, MiddleName, BirthDate, DeathDate, IDNumber];
+    const params = [Surname, FirstName, MiddleName, DeathDate, IDNumber];
     const query = `UPDATE HR.PER_ALL_PEOPLE_F SET
                     LAST_NAME = :lastname,
                     FIRST_NAME = :firstname,
                     MIDDLE_NAMES = :middlename,
-                    DATE_OF_BIRTH = TO_DATE(:birthdate, 'DD-MON-YY'),
+                    DATE_OF_DEATH = TO_DATE(:birthdate, 'DD-MON-YY'),
                     EFFECTIVE_START_DATE = TO_DATE((sysdate + 1), 'DD-MON-YY'),
                     EFFECTIVE_END_DATE = TO_DATE('31-DEC-12', 'DD-MON-YY'),
-                    ATTRIBUTE10 = 'verified',
-                    DATE_OF_DEATH = TO_DATE(:date_of_death, 'DD-MON-YY')
+                    ATTRIBUTE10 = 'verified' 
                 WHERE ${old_record_criteria}`;
 
     await db.execute(query, params, { autoCommit: true });
