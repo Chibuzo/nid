@@ -151,6 +151,7 @@ const verifyNewRecords = async () => {
     fetchedData = await Promise.all(records.map(record => fetchPersonData(record.NID)));
     console.log(fetchedData.length);
     console.log('Fetched data')
+    console.log({ fetchedData });
     fetchedData.forEach(data => {
         savePersonData(db, data);
 
