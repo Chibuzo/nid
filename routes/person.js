@@ -11,6 +11,16 @@ routes.get('/:person_id', async (req, res) => {
     }
 });
 
+routes.put('/verify-all', async (req, res) => {
+    try {
+        await fetchAndUpdatePeopleData();
+        res.status(200).json({ status: true, message: 'Operation successful' });
+    } catch (err) {
+        console.log(err)
+        res.status(err.statusCode || 500).json({ status: false, message: err.message });
+    }
+});
+
 routes.post('/save', async (req, res) => {
     try {
         const person = await savePersonData({

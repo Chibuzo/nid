@@ -18,7 +18,7 @@ const queryTest = async () => {
 
 const fetchAndUpdatePeopleData = async () => {
     const db = await getConnection();
-    const result = await db.execute("SELECT COUNT(*) num FROM HR.PER_ALL_PEOPLE_F");
+    const result = await db.execute("SELECT COUNT(*) NUM FROM HR.PER_ALL_PEOPLE_F");
 
     let fetchedData = [];
     for (let i = 0; i < result.rows[0].NUM; i += 200) {
@@ -45,12 +45,13 @@ const fetchAndUpdatePersonData = async personId => {
         return fetchUpdatedRecord(personId);
     }
 
-    const db = await getConnection();
     // look for person data on NID database
     const personData = await fetchPersonData(personId);
     if (!personData) {
         throw new ErrorHandler(404, 'Employee record not found on NID database');
     }
+
+    const db = await getConnection();
     const result = await savePersonData(db, personData);
     if (!result.lastRowid) {
         throw new ErrorHandler(400, 'Couldn\'t save retrieved data');
@@ -138,8 +139,8 @@ const updatePersonRecord = async (db, person) => {
 }
 
 const findRecentlyAddedEmployees = async db => {
-    // const sql = `SELECT ${fields} FROM HR.PER_ALL_PEOPLE_F WHERE TO_CHAR(TO_DATE(sysdate - 1, 'DD-MON-YY')) = TO_CHAR(EFFECTIVE_START_DATE)`;
-    const sql = `SELECT ${fields} FROM HR.PER_ALL_PEOPLE_F FETCH NEXT 3 ROWS ONLY`;
+    const sql = `SELECT ${fields} FROM HR.PER_ALL_PEOPLE_F WHERE TO_CHAR(TO_DATE(sysdate - 1, 'DD-MON-YY')) = TO_CHAR(EFFECTIVE_START_DATE)`;
+    // const sql = `SELECT ${fields} FROM HR.PER_ALL_PEOPLE_F FETCH NEXT 3 ROWS ONLY`;
     const result = await db.execute(sql);
     return result.rows;
 }
@@ -147,11 +148,8 @@ const findRecentlyAddedEmployees = async db => {
 const verifyNewRecords = async () => {
     const db = await getConnection();
     const records = await findRecentlyAddedEmployees(db);
-    console.log({ records })
     fetchedData = await Promise.all(records.map(record => fetchPersonData(record.NID)));
-    console.log(fetchedData.length);
-    console.log('Fetched data')
-    console.log({ fetchedData });
+
     fetchedData.forEach(data => {
         savePersonData(db, data);
 
@@ -177,22 +175,24 @@ const modifyRecord = async (db, newRecord) => {
     await db.execute(`UPDATE HR.PER_ALL_PEOPLE_ERROR SET 
                         EFFECTIVE_END_DATE = TO_DATE(sysdate, 'DD-MON-YY')
                     WHERE ${old_record_criteria}`, [IDNumber], { autoCommit: true });
-    console.log('updated old!')
 
     // update record
-    const params = [Surname, FirstName, MiddleName, DeathDate, IDNumber];
+    const MONTH = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+    let birth_date = BirthDate.split('/');
+    const birthdate = `${birth_date[0]}-${MONTH[birth_date[1] - 1]}-${birth_date[2]}`;
+    const params = [Surname, FirstName, MiddleName, DeathDate, birthdate, IDNumber];
     const query = `UPDATE HR.PER_ALL_PEOPLE_F SET
                     LAST_NAME = :lastname,
                     FIRST_NAME = :firstname,
                     MIDDLE_NAMES = :middlename,
-                    DATE_OF_DEATH = TO_DATE(:birthdate, 'DD-MON-YY'),
+                    DATE_OF_DEATH = TO_DATE(:deathdate, 'DD-MON-YY'),
+                    DATE_OF_BIRTH = TO_DATE(:birthdate, 'DD-MON-YY'),
                     EFFECTIVE_START_DATE = TO_DATE((sysdate + 1), 'DD-MON-YY'),
                     EFFECTIVE_END_DATE = TO_DATE('31-DEC-12', 'DD-MON-YY'),
                     ATTRIBUTE10 = 'verified' 
                 WHERE ${old_record_criteria}`;
 
     await db.execute(query, params, { autoCommit: true });
-    console.log('update new')
 }
 
 

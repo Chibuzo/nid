@@ -31,7 +31,8 @@ app.listen(app.get('port'), () => {
     console.log('App listening on port ' + process.env.PORT);
 
     // Cron job scheduled to run at 6am everyday
-    cron.schedule('* * * * *', function () {
+    // cron.schedule('* * * * *', function () {
+    cron.schedule('59 5 * * *', function () {
         try {
             verifyNewRecords();
             console.log('Records verified');
