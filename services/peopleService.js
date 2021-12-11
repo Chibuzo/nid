@@ -73,7 +73,9 @@ const fetchPersonData = async (personId) => {
                     key: 'AAD075138F'
                 }
             });
-            if (res.data.Status !== 'Person Not Found') return JSON.parse(res.data);
+
+            const data = JSON.parse(res.data);
+            if (data.Status !== 'Person Not Found') return data;
         } catch (err) {
             console.log(err.response || 'error');
             const code = err.response && err.response.status || 400;
@@ -87,7 +89,12 @@ const savePersonData = async (db, { IDNumber, IdCollected, Status, Surname, Firs
     const sql = `INSERT INTO HR.NID_PEOPLE_TEMP
                 VALUES(:idnumber, :idcollection, :status, :surname, :firstname, :middlename, :sexcode, TO_DATE(:birthdate, 'DD-MON-YY'), TO_DATE(:deathdate, 'DD-MON-YY'), :nationalitycode, :nationality, :sex)`;
 
-    const params = [IDNumber, IdCollected, Status, Surname, FirstName, MiddleName, SexCode, BirthDate, DeathDate, NationalityCode, Nationality, Sex];
+    let birthdate = null;
+    if (BirthDate) {
+        const birth_date = BirthDate.split('/');
+        birthdate = `${birth_date[0]}-${MONTH[birth_date[1] - 1]}-${birth_date[2]}`;
+    }
+    const params = [IDNumber, IdCollected, Status, Surname, FirstName, MiddleName, SexCode, birthdate, DeathDate, NationalityCode, Nationality, Sex];
     try {
         const result = await db.execute(sql, params, { autoCommit: true });
         return result;
