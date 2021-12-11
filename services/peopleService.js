@@ -72,7 +72,7 @@ const fetchPersonData = async (personId) => {
                     key: 'AAD075138F'
                 }
             });
-
+            console.log(res.data)
             if (res.data.Status != 'Person Not Found') return JSON.parse(res.data);
         } catch (err) {
             console.log(err.response || 'error');
@@ -113,7 +113,7 @@ const findVerifiedPerson = async personID => {
 }
 
 const fetchPeoplesRecord = async (db, offset) => {
-    const result = await db.execute(`SELECT ${fields} FROM HR.PER_ALL_PEOPLE_F OFFSET :offset ROWS FETCH NEXT :limit ROWS ONLY`, [offset, 200]);
+    const result = await db.execute(`SELECT ${fields} FROM HR.PER_ALL_PEOPLE_F OFFSET :offset ROWS FETCH NEXT :limit ROWS ONLY`, [offset, 10]);
     return result.rows;
 }
 
