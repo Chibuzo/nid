@@ -100,6 +100,7 @@ const savePersonData = async (db, { IDNumber, IdCollected, Status, Surname, Firs
 const saveFetchedData = async (db, data) => {
     return Promise.all(data.map(d => {
         if (d && d.IDNumber) {
+            console.log(d)
             updatePersonRecord(db, d);
             savePersonData(db, d);
         }
@@ -124,7 +125,7 @@ const fetchUpdatedRecord = async personId => {
 }
 
 const updatePersonRecord = async (db, person) => {
-    const { IDNumber, Surname, FirstName, MiddleName, BirthDate, DeathDate } = person;
+    const { IDNumber, Surname = '-', FirstName = '-', MiddleName = '-', BirthDate, DeathDate } = person;
 
     let birthdate = null;
     if (BirthDate) {
@@ -138,9 +139,9 @@ const updatePersonRecord = async (db, person) => {
     }
 
     const sql = `UPDATE HR.PER_ALL_PEOPLE_F SET
-                    LAST_NAME = NVL(:lastname, ''),
-                    FIRST_NAME = NVL(:firstname, ''),
-                    MIDDLE_NAMES = NVL(:middlename, ''),
+                    LAST_NAME = :lastname,
+                    FIRST_NAME = :firstname,
+                    MIDDLE_NAMES = :middlename,
                     DATE_OF_BIRTH = TO_DATE(:birthdate, 'DD-MON-YY'),
                     ATTRIBUTE10 = 'verified',
                     DATE_OF_DEATH = TO_DATE(:date_of_death, 'DD-MON-YY')
@@ -175,7 +176,7 @@ const verifyNewRecords = async () => {
 }
 
 const modifyRecord = async (db, newRecord) => {
-    const { IDNumber, Surname, FirstName, MiddleName, BirthDate, DeathDate } = newRecord;
+    const { IDNumber, Surname = '-', FirstName = '-', MiddleName = '-', BirthDate, DeathDate } = newRecord;
 
     const old_record_criteria = "NATIONAL_IDENTIFIER = :nid AND TO_CHAR(EFFECTIVE_END_DATE) >= TO_CHAR(TO_DATE(sysdate, 'DD-MON-YY'))";
     const sql = `INSERT INTO HR.PER_ALL_PEOPLE_ERROR 
@@ -203,9 +204,9 @@ const modifyRecord = async (db, newRecord) => {
 
     const params = [Surname, FirstName, MiddleName, deathdate, birthdate, IDNumber];
     const query = `UPDATE HR.PER_ALL_PEOPLE_F SET
-                    LAST_NAME = NVL(:lastname, ''),
-                    FIRST_NAME = NVL(:firstname, ''),
-                    MIDDLE_NAMES = NVL(:middlename, ''),
+                    LAST_NAME = :lastname,
+                    FIRST_NAME = :firstname,
+                    MIDDLE_NAMES = :middlename,
                     DATE_OF_DEATH = TO_DATE(:deathdate, 'DD-MON-YY'),
                     DATE_OF_BIRTH = TO_DATE(:birthdate, 'DD-MON-YY'),
                     EFFECTIVE_START_DATE = TO_DATE((sysdate + 1), 'DD-MON-YY'),
