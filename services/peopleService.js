@@ -85,7 +85,7 @@ const fetchPersonData = async (personId) => {
 
 const savePersonData = async (db, { IDNumber, IdCollected, Status, Surname, FirstName, MiddleName, SexCode, BirthDate, DeathDate, NationalityCode, Nationality, Sex }) => {
     const sql = `INSERT INTO HR.NID_TEMP
-                VALUES(:idnumber, :idcollection, :status, :surname, :firstname, :middlename, :sexcode, TO_DATE(:birthdate, 'DD-MON-YY'), TO_DATE(:deathdate, 'DD-MON-YY'), :nationalitycode, :nationality, :sex)`;
+                VALUES(:idnumber, :idcollection, :status, NVL(:surname, ''), NVL(:firstname, ''), NVL(:middlename, ''), :sexcode, TO_DATE(:birthdate, 'DD-MON-YY'), TO_DATE(:deathdate, 'DD-MON-YY'), :nationalitycode, :nationality, :sex)`;
 
     const params = [IDNumber, IdCollected, Status, Surname, FirstName, MiddleName, SexCode, BirthDate, DeathDate, NationalityCode, Nationality, Sex];
     try {
@@ -139,9 +139,9 @@ const updatePersonRecord = async (db, person) => {
 
 
     const sql = `UPDATE HR.PER_ALL_PEOPLE_F SET
-                    LAST_NAME = :lastname,
-                    FIRST_NAME = :firstname,
-                    MIDDLE_NAMES = :middlename,
+                    LAST_NAME = NVL(:lastname, ''),
+                    FIRST_NAME = NVL(:firstname, ''),
+                    MIDDLE_NAMES = NVL(:middlename, ''),
                     DATE_OF_BIRTH = TO_DATE(:birthdate, 'DD-MON-YY'),
                     ATTRIBUTE10 = 'verified',
                     DATE_OF_DEATH = TO_DATE(:date_of_death, 'DD-MON-YY')
@@ -204,9 +204,9 @@ const modifyRecord = async (db, newRecord) => {
 
     const params = [Surname, FirstName, MiddleName, deathdate, birthdate, IDNumber];
     const query = `UPDATE HR.PER_ALL_PEOPLE_F SET
-                    LAST_NAME = :lastname,
-                    FIRST_NAME = :firstname,
-                    MIDDLE_NAMES = :middlename,
+                    LAST_NAME = NVL(:lastname, ''),
+                    FIRST_NAME = NVL(:firstname, ''),
+                    MIDDLE_NAMES = NVL(:middlename, ''),
                     DATE_OF_DEATH = TO_DATE(:deathdate, 'DD-MON-YY'),
                     DATE_OF_BIRTH = TO_DATE(:birthdate, 'DD-MON-YY'),
                     EFFECTIVE_START_DATE = TO_DATE((sysdate + 1), 'DD-MON-YY'),
