@@ -29,15 +29,16 @@ const fetchAndUpdatePeopleData = async () => {
         try {
             saveFetchedData(db, fetchedData);
         } catch (err) {
+            console.log(err)
             continue; // add log for this
         }
         console.log('Batch:' + i);
     }
-    const sql = `UPDATE HR.PER_ALL_PEOPLE_F SET
-                    ATTRIBUTE10 = 'unverified',
-                WHERE ATTRIBUTE10 <> 'verified'`;
+    // const sql = `UPDATE HR.PER_ALL_PEOPLE_F SET
+    //                 ATTRIBUTE10 = 'unverified',
+    //             WHERE ATTRIBUTE10 <> 'verified'`;
 
-    await db.execute(sql, { autoCommit: true });
+    // await db.execute(sql, { autoCommit: true });
 }
 
 const fetchAndUpdatePersonData = async personId => {
@@ -72,8 +73,7 @@ const fetchPersonData = async (personId) => {
                     key: 'AAD075138F'
                 }
             });
-            console.log(res.data)
-            if (res.data.Status != 'Person Not Found') return JSON.parse(res.data);
+            if (res.data.Status !== 'Person Not Found') return JSON.parse(res.data);
         } catch (err) {
             console.log(err.response || 'error');
             const code = err.response && err.response.status || 400;
@@ -85,7 +85,7 @@ const fetchPersonData = async (personId) => {
 
 const savePersonData = async (db, { IDNumber, IdCollected, Status, Surname, FirstName, MiddleName, SexCode, BirthDate, DeathDate, NationalityCode, Nationality, Sex }) => {
     const sql = `INSERT INTO HR.NID_PEOPLE_TEMP
-                VALUES(:idnumber, :idcollection, :status, NVL(:surname, ''), NVL(:firstname, ''), NVL(:middlename, ''), :sexcode, TO_DATE(:birthdate, 'DD-MON-YY'), TO_DATE(:deathdate, 'DD-MON-YY'), :nationalitycode, :nationality, :sex)`;
+                VALUES(:idnumber, :idcollection, :status, :surname, :firstname, :middlename, :sexcode, TO_DATE(:birthdate, 'DD-MON-YY'), TO_DATE(:deathdate, 'DD-MON-YY'), :nationalitycode, :nationality, :sex)`;
 
     const params = [IDNumber, IdCollected, Status, Surname, FirstName, MiddleName, SexCode, BirthDate, DeathDate, NationalityCode, Nationality, Sex];
     try {
@@ -113,7 +113,7 @@ const findVerifiedPerson = async personID => {
 }
 
 const fetchPeoplesRecord = async (db, offset) => {
-    const result = await db.execute(`SELECT ${fields} FROM HR.PER_ALL_PEOPLE_F OFFSET :offset ROWS FETCH NEXT :limit ROWS ONLY`, [offset, 10]);
+    const result = await db.execute(`SELECT ${fields} FROM HR.PER_ALL_PEOPLE_F OFFSET :offset ROWS FETCH NEXT :limit ROWS ONLY`, [offset, 200]);
     return result.rows;
 }
 
