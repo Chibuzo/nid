@@ -126,8 +126,11 @@ const fetchUpdatedRecord = async personId => {
 const updatePersonRecord = async (db, person) => {
     const { IDNumber, Surname, FirstName, MiddleName, BirthDate, DeathDate } = person;
 
-    const birth_date = BirthDate.split('/');
-    const birthdate = `${birth_date[0]}-${MONTH[birth_date[1] - 1]}-${birth_date[2]}`;
+    let birthdate = null;
+    if (BirthDate) {
+        const birth_date = BirthDate.split('/');
+        birthdate = `${birth_date[0]}-${MONTH[birth_date[1] - 1]}-${birth_date[2]}`;
+    }
     let deathdate = null;
     if (DeathDate) {
         const death_date = DeathDate.split('/');
@@ -188,8 +191,11 @@ const modifyRecord = async (db, newRecord) => {
                     WHERE ${old_record_criteria}`, [IDNumber], { autoCommit: true });
 
     // update record
-    let birth_date = BirthDate.split('/');
-    const birthdate = `${birth_date[0]}-${MONTH[birth_date[1] - 1]}-${birth_date[2]}`;
+    let birthdate = null;
+    if (BirthDate) {
+        const birth_date = BirthDate.split('/');
+        birthdate = `${birth_date[0]}-${MONTH[birth_date[1] - 1]}-${birth_date[2]}`;
+    }
     let deathdate = null;
     if (DeathDate) {
         const death_date = DeathDate.split('/');
