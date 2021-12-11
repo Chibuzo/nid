@@ -124,7 +124,7 @@ const fetchUpdatedRecord = async personId => {
 }
 
 const updatePersonRecord = async (db, person) => {
-    const { IDNumber, Surname = '', FirstName = '', MiddleName = '', BirthDate, DeathDate } = person;
+    const { IDNumber, Surname, FirstName, MiddleName, BirthDate, DeathDate } = person;
 
     let birthdate = null;
     if (BirthDate) {
@@ -176,7 +176,7 @@ const verifyNewRecords = async () => {
 }
 
 const modifyRecord = async (db, newRecord) => {
-    const { IDNumber, Surname = '', FirstName = '', MiddleName = '', BirthDate, DeathDate } = newRecord;
+    const { IDNumber, Surname, FirstName, MiddleName, BirthDate, DeathDate } = newRecord;
 
     const old_record_criteria = "NATIONAL_IDENTIFIER = :nid AND TO_CHAR(EFFECTIVE_END_DATE) >= TO_CHAR(TO_DATE(sysdate, 'DD-MON-YY'))";
     const sql = `INSERT INTO HR.PER_ALL_PEOPLE_ERROR 
