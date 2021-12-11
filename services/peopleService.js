@@ -73,7 +73,7 @@ const fetchPersonData = async (personId) => {
                 }
             });
 
-            if (!res.data.Status) return JSON.parse(res.data);
+            if (res.data.Status != 'Person Not Found') return JSON.parse(res.data);
         } catch (err) {
             console.log(err.response || 'error');
             const code = err.response && err.response.status || 400;
@@ -100,7 +100,6 @@ const savePersonData = async (db, { IDNumber, IdCollected, Status, Surname, Firs
 const saveFetchedData = async (db, data) => {
     return Promise.all(data.map(d => {
         if (d && d.IDNumber) {
-            console.log(d)
             updatePersonRecord(db, d);
             savePersonData(db, d);
         }
