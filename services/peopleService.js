@@ -2,7 +2,8 @@ const { getConnection } = require('../config/dbconnection');
 const { ErrorHandler } = require('../helpers/errorHandler');
 const axios = require('axios');
 
-const fields = ['FIRST_NAME', 'LAST_NAME', 'MIDDLE_NAMES', 'NATIONAL_IDENTIFIER NID', 'DATE_OF_BIRTH']
+const fields = ['FIRST_NAME', 'LAST_NAME', 'MIDDLE_NAMES', 'NATIONAL_IDENTIFIER NID', 'DATE_OF_BIRTH'];
+const MONTH = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
 
 const queryTest = async () => {
     const sql = `select person_id, full_name, payroll_name 
@@ -124,16 +125,23 @@ const fetchUpdatedRecord = async personId => {
 
 const updatePersonRecord = async (db, person) => {
     const { IDNumber, Surname, FirstName, MiddleName, BirthDate, DeathDate } = person;
-    const params = [Surname, FirstName, MiddleName, BirthDate, DeathDate, IDNumber];
+
+    const birth_date = BirthDate.split('/');
+    const birthdate = `${birth_date[0]}-${MONTH[birth_date[1] - 1]}-${birth_date[2]}`;
+    const death_date = DeathDate.split('/');
+    const deathdate = `${death_date[0]}-${MONTH[death_date[1] - 1]}-${death_date[2]}`;
+
 
     const sql = `UPDATE HR.PER_ALL_PEOPLE_F SET
                     LAST_NAME = :lastname,
                     FIRST_NAME = :firstname,
                     MIDDLE_NAMES = :middlename,
-                    DATE_OF_BIRTH = TO_DATE(:birthdate),
+                    DATE_OF_BIRTH = TO_DATE(:birthdate, 'DD-MON-YY'),
                     ATTRIBUTE10 = 'verified',
                     DATE_OF_DEATH = TO_DATE(:date_of_death, 'DD-MON-YY')
                 WHERE NATIONAL_IDENTIFIER = :nid`;
+
+    const params = [Surname, FirstName, MiddleName, birthdate, deathdate, IDNumber];
 
     const result = await db.execute(sql, params, { autoCommit: true });
 }
@@ -177,10 +185,12 @@ const modifyRecord = async (db, newRecord) => {
                     WHERE ${old_record_criteria}`, [IDNumber], { autoCommit: true });
 
     // update record
-    const MONTH = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
     let birth_date = BirthDate.split('/');
     const birthdate = `${birth_date[0]}-${MONTH[birth_date[1] - 1]}-${birth_date[2]}`;
-    const params = [Surname, FirstName, MiddleName, DeathDate, birthdate, IDNumber];
+    const death_date = DeathDate.split('/');
+    const deathdate = `${death_date[0]}-${MONTH[death_date[1] - 1]}-${death_date[2]}`;
+
+    const params = [Surname, FirstName, MiddleName, deathdate, birthdate, IDNumber];
     const query = `UPDATE HR.PER_ALL_PEOPLE_F SET
                     LAST_NAME = :lastname,
                     FIRST_NAME = :firstname,
