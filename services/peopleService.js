@@ -84,7 +84,7 @@ const fetchPersonData = async (personId) => {
 }
 
 const savePersonData = async (db, { IDNumber, IdCollected, Status, Surname, FirstName, MiddleName, SexCode, BirthDate, DeathDate, NationalityCode, Nationality, Sex }) => {
-    const sql = `INSERT INTO HR.NID_TEMP
+    const sql = `INSERT INTO HR.NID_PEOPLE_TEMP
                 VALUES(:idnumber, :idcollection, :status, NVL(:surname, ''), NVL(:firstname, ''), NVL(:middlename, ''), :sexcode, TO_DATE(:birthdate, 'DD-MON-YY'), TO_DATE(:deathdate, 'DD-MON-YY'), :nationalitycode, :nationality, :sex)`;
 
     const params = [IDNumber, IdCollected, Status, Surname, FirstName, MiddleName, SexCode, BirthDate, DeathDate, NationalityCode, Nationality, Sex];
@@ -108,7 +108,7 @@ const saveFetchedData = async (db, data) => {
 
 const findVerifiedPerson = async personID => {
     const db = await getConnection();
-    const result = await db.execute('SELECT IDNUMBER FROM HR.NID_TEMP WHERE IDNUMBER = :idnumber', [personID]);
+    const result = await db.execute('SELECT IDNUMBER FROM HR.NID_PEOPLE_TEMP WHERE IDNUMBER = :idnumber', [personID]);
     return result.rows;
 }
 
@@ -136,7 +136,6 @@ const updatePersonRecord = async (db, person) => {
         const death_date = DeathDate.split('/');
         deathdate = `${death_date[0]}-${MONTH[death_date[1] - 1]}-${death_date[2]}`;
     }
-
 
     const sql = `UPDATE HR.PER_ALL_PEOPLE_F SET
                     LAST_NAME = NVL(:lastname, ''),
