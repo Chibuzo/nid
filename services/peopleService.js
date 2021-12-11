@@ -128,8 +128,11 @@ const updatePersonRecord = async (db, person) => {
 
     const birth_date = BirthDate.split('/');
     const birthdate = `${birth_date[0]}-${MONTH[birth_date[1] - 1]}-${birth_date[2]}`;
-    const death_date = DeathDate.split('/');
-    const deathdate = `${death_date[0]}-${MONTH[death_date[1] - 1]}-${death_date[2]}`;
+    let deathdate = null;
+    if (DeathDate) {
+        const death_date = DeathDate.split('/');
+        deathdate = `${death_date[0]}-${MONTH[death_date[1] - 1]}-${death_date[2]}`;
+    }
 
 
     const sql = `UPDATE HR.PER_ALL_PEOPLE_F SET
@@ -187,8 +190,11 @@ const modifyRecord = async (db, newRecord) => {
     // update record
     let birth_date = BirthDate.split('/');
     const birthdate = `${birth_date[0]}-${MONTH[birth_date[1] - 1]}-${birth_date[2]}`;
-    const death_date = DeathDate.split('/');
-    const deathdate = `${death_date[0]}-${MONTH[death_date[1] - 1]}-${death_date[2]}`;
+    let deathdate = null;
+    if (DeathDate) {
+        const death_date = DeathDate.split('/');
+        deathdate = `${death_date[0]}-${MONTH[death_date[1] - 1]}-${death_date[2]}`;
+    }
 
     const params = [Surname, FirstName, MiddleName, deathdate, birthdate, IDNumber];
     const query = `UPDATE HR.PER_ALL_PEOPLE_F SET
