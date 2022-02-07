@@ -5,11 +5,23 @@ const axios = require('axios');
 const fields = ['FIRST_NAME', 'LAST_NAME', 'MIDDLE_NAMES', 'NATIONAL_IDENTIFIER NID', 'DATE_OF_BIRTH'];
 const MONTH = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
 
+`SELECT pp.FIRST_NAME, pp.LAST_NAME, pp.MIDDLE_NAMES, pp.SEX GENDER, pp.TITLE, pp.NATIONAL_IDENTIFIER NID, pp.EMPLOYEE_NUMBER, p.name POSITION, 
+g.NAME GRADE, PAYROLL_NAME, org.name DEPARTMENT, org.ATTRIBUTE5 MINISTRY,
+CASE WHEN pp.ATTRIBUTE10 = 'verified' THEN 1 ELSE 0 END AS NID_VERIFIED, 
+CASE WHEN pp.DATE_OF_DEATH IS NULL THEN 0 ELSE 1 END AS DEAD
+FROM HR.PER_ALL_PEOPLE_F pp
+LEFT JOIN HR.PER_ALL_ASSIGNMENTS_F a USING(PERSON_ID)
+JOIN hr_all_organization_units org ON a.organization_id = org.organization_id
+LEFT JOIN HR.HR_ALL_POSITIONS_F p using (position_id)
+LEFT OUTER JOIN HR.PER_GRADES g USING(GRADE_ID)
+LEFT JOIN HR.PAY_ALL_PAYROLLS_F pr ON pr.PAYROLL_ID = a.PAYROLL_ID
+LEFT JOIN HR.NID_PEOPLE_TEMP nd ON nd.idnumber = pp.NATIONAL_IDENTIFIER`
+
 const queryTest = async () => {
     const sql = `select person_id, full_name, payroll_name 
         from per_all_people_f p
         join per_all_assignments_f a using(person_id)
-        join pay_all_payrolls_f p ON p.payroll_id = a.payroll_id
+        join pay_all_payrolls_f pp ON pp.payroll_id = a.payroll_id
         where payroll_name = 'Civil Pensions Payroll'
     `;
     const db = await getConnection();
@@ -80,7 +92,7 @@ const fetchPersonData = async (personId) => {
             console.log(err.response || 'error');
             const code = err.response && err.response.status || 400;
             const message = err.response && err.response.statusText || 'Unable to fetch data';
-            // throw new ErrorHandler(code, message)
+            throw new ErrorHandler(code, message)
         }
     }
 }
@@ -99,7 +111,7 @@ const savePersonData = async (db, { IDNumber, IdCollected, Status, Surname, Firs
         const result = await db.execute(sql, params, { autoCommit: true });
         return result;
     } catch (err) {
-
+        console.log(err)
     }
     return null;
 }
@@ -132,6 +144,7 @@ const fetchUpdatedRecord = async personId => {
 
 const updatePersonRecord = async (db, person) => {
     const { IDNumber, Surname = '-', FirstName = '-', MiddleName = '-', BirthDate, DeathDate } = person;
+    let death_status;
 
     let birthdate = null;
     if (BirthDate) {
@@ -142,6 +155,7 @@ const updatePersonRecord = async (db, person) => {
     if (DeathDate) {
         const death_date = DeathDate.split('/');
         deathdate = `${death_date[0]}-${MONTH[death_date[1] - 1]}-${death_date[2]}`;
+        death_status = 'dead';
     }
 
     const sql = `UPDATE HR.PER_ALL_PEOPLE_F SET
@@ -150,10 +164,11 @@ const updatePersonRecord = async (db, person) => {
                     MIDDLE_NAMES = :middlename,
                     DATE_OF_BIRTH = TO_DATE(:birthdate, 'DD-MON-YY'),
                     ATTRIBUTE10 = 'verified',
+                    ATTRIBUTE11 = :death_status,
                     DATE_OF_DEATH = TO_DATE(:date_of_death, 'DD-MON-YY')
                 WHERE NATIONAL_IDENTIFIER = :nid`;
 
-    const params = [Surname, FirstName, MiddleName, birthdate, deathdate, IDNumber];
+    const params = [Surname, FirstName, MiddleName, birthdate, death_status, deathdate, IDNumber];
 
     const result = await db.execute(sql, params, { autoCommit: true });
 }
@@ -170,13 +185,15 @@ const verifyNewRecords = async () => {
     const records = await findRecentlyAddedEmployees(db);
     fetchedData = await Promise.all(records.map(record => fetchPersonData(record.NID)));
 
-    fetchedData.forEach(data => {
-        savePersonData(db, data);
+    fetchedData.forEach(async data => {
+        await savePersonData(db, data);
 
         const { Surname, FirstName, MiddleName, BirthDate } = data;
         const { FIRST_NAME, LAST_NAME, MIDDLE_NAMES, DATE_OF_BIRTH } = records.find(record => record.NID == data.IDNumber);
         if (Surname != LAST_NAME || FirstName != FIRST_NAME || MiddleName != MIDDLE_NAMES || BirthDate != DATE_OF_BIRTH) {
-            modifyRecord(db, data);
+            await modifyRecord(db, data);
+        } else {
+            await updatePersonRecord(db, data);
         }
     });
 }
@@ -198,6 +215,7 @@ const modifyRecord = async (db, newRecord) => {
 
     // update record
     let birthdate = null;
+    let death_status;
     if (BirthDate) {
         const birth_date = BirthDate.split('/');
         birthdate = `${birth_date[0]}-${MONTH[birth_date[1] - 1]}-${birth_date[2]}`;
@@ -206,9 +224,10 @@ const modifyRecord = async (db, newRecord) => {
     if (DeathDate) {
         const death_date = DeathDate.split('/');
         deathdate = `${death_date[0]}-${MONTH[death_date[1] - 1]}-${death_date[2]}`;
+        death_status = 'dead';
     }
 
-    const params = [Surname, FirstName, MiddleName, deathdate, birthdate, IDNumber];
+    const params = [Surname, FirstName, MiddleName, deathdate, birthdate, death_status, IDNumber];
     const query = `UPDATE HR.PER_ALL_PEOPLE_F SET
                     LAST_NAME = :lastname,
                     FIRST_NAME = :firstname,
@@ -217,7 +236,8 @@ const modifyRecord = async (db, newRecord) => {
                     DATE_OF_BIRTH = TO_DATE(:birthdate, 'DD-MON-YY'),
                     EFFECTIVE_START_DATE = TO_DATE((sysdate + 1), 'DD-MON-YY'),
                     EFFECTIVE_END_DATE = TO_DATE('31-DEC-12', 'DD-MON-YY'),
-                    ATTRIBUTE10 = 'verified' 
+                    ATTRIBUTE10 = 'verified',
+                    ATTRIBUTE11 = :death_status
                 WHERE ${old_record_criteria}`;
 
     await db.execute(query, params, { autoCommit: true });
