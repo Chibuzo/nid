@@ -94,11 +94,17 @@ const savePersonData = async (db, { IDNumber, IdCollected, Status, Surname, Firs
         const birth_date = BirthDate.split('/');
         birthdate = `${birth_date[0]}-${MONTH[birth_date[1] - 1]}-${birth_date[2]}`;
     }
-    const params = [IDNumber, IdCollected, Status, Surname, FirstName, MiddleName, SexCode, birthdate, DeathDate, NationalityCode, Nationality, Sex];
+    let deathdate = null;
+    if (DeathDate) {
+        const death_date = DeathDate.split('/');
+        deathdate = `${death_date[0]}-${MONTH[death_date[1] - 1]}-${death_date[2]}`;
+    }
+    const params = [IDNumber, IdCollected, Status, Surname, FirstName, MiddleName, SexCode, birthdate, deathdate, NationalityCode, Nationality, Sex];
     try {
         const result = await db.execute(sql, params, { autoCommit: true });
         return result;
     } catch (err) {
+        console.log('save person data: ')
         console.log(err)
     }
     return null;
