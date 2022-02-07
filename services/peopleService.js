@@ -5,18 +5,6 @@ const axios = require('axios');
 const fields = ['FIRST_NAME', 'LAST_NAME', 'MIDDLE_NAMES', 'NATIONAL_IDENTIFIER NID', 'DATE_OF_BIRTH'];
 const MONTH = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
 
-`SELECT pp.FIRST_NAME, pp.LAST_NAME, pp.MIDDLE_NAMES, pp.SEX GENDER, pp.TITLE, pp.NATIONAL_IDENTIFIER NID, pp.EMPLOYEE_NUMBER, p.name POSITION, 
-g.NAME GRADE, PAYROLL_NAME, org.name DEPARTMENT, org.ATTRIBUTE5 MINISTRY,
-CASE WHEN pp.ATTRIBUTE10 = 'verified' THEN 1 ELSE 0 END AS NID_VERIFIED, 
-CASE WHEN pp.DATE_OF_DEATH IS NULL THEN 0 ELSE 1 END AS DEAD
-FROM HR.PER_ALL_PEOPLE_F pp
-LEFT JOIN HR.PER_ALL_ASSIGNMENTS_F a USING(PERSON_ID)
-JOIN hr_all_organization_units org ON a.organization_id = org.organization_id
-LEFT JOIN HR.HR_ALL_POSITIONS_F p using (position_id)
-LEFT OUTER JOIN HR.PER_GRADES g USING(GRADE_ID)
-LEFT JOIN HR.PAY_ALL_PAYROLLS_F pr ON pr.PAYROLL_ID = a.PAYROLL_ID
-LEFT JOIN HR.NID_PEOPLE_TEMP nd ON nd.idnumber = pp.NATIONAL_IDENTIFIER`
-
 const queryTest = async () => {
     const sql = `select person_id, full_name, payroll_name 
         from per_all_people_f p
