@@ -204,7 +204,7 @@ const modifyRecord = async (db, newRecord) => {
 
     // obsolete old record
     await db.execute(`UPDATE HR.PER_ALL_PEOPLE_ERROR SET 
-                        EFFECTIVE_END_DATE = TO_DATE(sysdate, 'DD-MON-YY')
+                        EFFECTIVE_END_DATE = TO_DATE(sysdate, 'DD-MON-YYYY')
                     WHERE ${old_record_criteria}`, [IDNumber], { autoCommit: true });
 
     // update record
@@ -229,7 +229,7 @@ const modifyRecord = async (db, newRecord) => {
                     DATE_OF_DEATH = TO_DATE(:deathdate, 'DD-MON-YY'),
                     DATE_OF_BIRTH = TO_DATE(:birthdate, 'DD-MON-YY'),
                     EFFECTIVE_START_DATE = TO_DATE((sysdate + 1), 'DD-MON-YY'),
-                    EFFECTIVE_END_DATE = TO_DATE('31-DEC-12', 'DD-MON-YY'),
+                    EFFECTIVE_END_DATE = TO_DATE('31-DEC-4712', 'DD-MON-YYYY'),
                     ATTRIBUTE10 = 'verified',
                     ATTRIBUTE11 = :death_status
                 WHERE ${old_record_criteria}`;
