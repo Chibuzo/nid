@@ -11,10 +11,11 @@ const queryTest = async () => {
         join per_all_assignments_f a using(person_id)
         join pay_all_payrolls_f pp ON pp.payroll_id = a.payroll_id
         where payroll_name = 'Civil Pensions Payroll'
+        FETCH NEXT 10 ROWS ONLY
     `;
     const db = await getConnection();
     const result = await db.execute(sql);
-    console.log(result.rows)
+    return result.rows;
 };
 
 const fetchAndUpdatePeopleData = async () => {
@@ -241,5 +242,6 @@ const modifyRecord = async (db, newRecord) => {
 module.exports = {
     fetchAndUpdatePeopleData,
     fetchAndUpdatePersonData,
-    verifyNewRecords
+    verifyNewRecords,
+    queryTest
 }

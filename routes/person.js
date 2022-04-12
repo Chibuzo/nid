@@ -1,5 +1,16 @@
 const routes = require('express').Router();
-const { fetchAndUpdatePersonData, fetchAndUpdatePeopleData } = require('../services/peopleService');
+const { fetchAndUpdatePersonData, fetchAndUpdatePeopleData, queryTest } = require('../services/peopleService');
+
+
+routes.get('/test', async (req, res) => {
+    try {
+        const person = await queryTest();
+        res.status(200).json({ status: true, data: { person } });
+    } catch (err) {
+        console.log(err)
+        res.status(err.statusCode || 500).json({ status: false, message: err.message });
+    }
+});
 
 routes.get('/:person_id', async (req, res) => {
     try {
@@ -21,27 +32,5 @@ routes.put('/verify-all', async (req, res) => {
     }
 });
 
-routes.post('/save', async (req, res) => {
-    try {
-        const person = await savePersonData({
-            "IDNumber": "060277102023",
-            "IdCollected": "Y",
-            "Status": "Active",
-            "Surname": "MOKHATHI",
-            "FirstName": "SETLABOCHA",
-            "MiddleName": "JONAS",
-            "SexCode": "M",
-            "BirthDate": "27/07/1976",
-            "DeathDate": "27/07/1976",
-            "NationalityCode": "LSO",
-            "Nationality": "Lesotho",
-            "Sex": "Male"
-        });
-        res.status(200).json({ status: true, data: { person } });
-    } catch (err) {
-        console.log(err)
-        res.status(err.statusCode || 500).json({ status: false, message: err.message });
-    }
-});
 
 module.exports = routes;

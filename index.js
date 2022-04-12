@@ -6,10 +6,13 @@ const apiRoutes = require('./routes');
 const { handleError, ErrorHandler } = require('./helpers/errorHandler');
 const { verifyNewRecords } = require('./services/peopleService');
 
+// initialize DB
+require('./config/dbconnection');
+
 app.use(express.json());
 
 app.get('/', (req, res) => {
-    res.status(200).json({ message: 'Welcome to my api!' });
+    res.status(200).json({ message: 'Welcome to NID api!' });
 });
 
 //app.use('/api', header_validation, apiRoutes);
