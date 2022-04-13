@@ -133,7 +133,7 @@ const fetchPeoplesRecord = async (db, offset) => {
 
 const fetchUpdatedRecord = async personId => {
     const db = await getConnection();
-    const result = await db.execute('SELECT * FROM HR.PER_ALL_PEOPLE_F WHERE NATIONAL_IDENTIFIER = :idnumber', [personID]);
+    const result = await db.execute('SELECT * FROM HR.PER_ALL_PEOPLE_F WHERE NATIONAL_IDENTIFIER = :idnumber', [personId]);
     return result.rows[0];
 }
 
