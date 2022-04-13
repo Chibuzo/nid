@@ -5,7 +5,6 @@ const cron = require('node-cron');
 const apiRoutes = require('./routes');
 const { handleError, ErrorHandler } = require('./helpers/errorHandler');
 const { verifyNewRecords } = require('./services/peopleService');
-const header_validation = require('./middlewares/header_validator');
 
 // initialize DB
 require('./config/dbconnection');
@@ -17,7 +16,7 @@ app.get('/', (req, res) => {
 });
 
 //app.use('/api', header_validation, apiRoutes);
-app.use('/api', header_validation, apiRoutes);
+app.use('/api', apiRoutes);
 
 // catch 404 routes
 app.use((req, res, next) => {
