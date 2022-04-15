@@ -42,14 +42,14 @@ const fetchAndUpdatePeopleData = async () => {
     // await db.execute(sql, { autoCommit: true });
 }
 
-const fetchAndUpdatePersonData = async personId => {
-    const verifiedPerson = await findVerifiedPerson(personId);
+const fetchAndUpdatePersonData = async idNumber => {
+    const verifiedPerson = await findVerifiedPerson(idNumber);
     if (verifiedPerson) {
-        return fetchUpdatedRecord(personId);
+        return fetchUpdatedRecord(idNumber);
     }
 
     // look for person data on NID database
-    const personData = await fetchPersonData(personId);
+    const personData = await fetchPersonData(idNumber);
     if (!personData) {
         throw new ErrorHandler(404, 'Employee record not found on NID database');
     }
@@ -62,15 +62,15 @@ const fetchAndUpdatePersonData = async personId => {
     return updatePersonRecord(db, personData);
 }
 
-const fetchPersonData = async (personId) => {
-    if (personId) {
+const fetchPersonData = async (idNumber) => {
+    if (idNumber) {
         try {
             const res = await axios({
                 method: 'get',
                 url: '/apiService.svc/GetPersonByID',
                 baseURL: 'http://10.80.0.10:8088/',
                 params: {
-                    idNumber: personId,
+                    idNumber,
                     key: 'AAD075138F'
                 }
             });
@@ -120,9 +120,10 @@ const saveFetchedData = async (db, data) => {
     }));
 }
 
-const findVerifiedPerson = async personID => {
+const findVerifiedPerson = async idNumber => {
     const db = await getConnection();
-    const result = await db.execute('SELECT IDNUMBER FROM HR.NID_PEOPLE_TEMP WHERE IDNUMBER = :idnumber', [personID]);
+    const result = await db.execute('SELECT IDNUMBER FROM HR.NID_PEOPLE_TEMP WHERE IDNUMBER = :idnumber', [idNumber]);
+    console.log(result.rows)
     return result.rows;
 }
 
@@ -131,9 +132,9 @@ const fetchPeoplesRecord = async (db, offset) => {
     return result.rows;
 }
 
-const fetchUpdatedRecord = async personId => {
+const fetchUpdatedRecord = async idNumber => {
     const db = await getConnection();
-    const result = await db.execute('SELECT * FROM HR.PER_ALL_PEOPLE_F WHERE NATIONAL_IDENTIFIER = :idnumber', [personId]);
+    const result = await db.execute('SELECT * FROM HR.PER_ALL_PEOPLE_F WHERE NATIONAL_IDENTIFIER = :idnumber', [idNumber]);
     return result.rows[0];
 }
 
