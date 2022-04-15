@@ -244,5 +244,6 @@ module.exports = {
     fetchAndUpdatePeopleData,
     fetchAndUpdatePersonData,
     verifyNewRecords,
+    fetchPersonData,
     queryTest
 }
