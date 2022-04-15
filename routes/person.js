@@ -1,5 +1,5 @@
 const routes = require('express').Router();
-const { fetchAndUpdatePersonData, fetchAndUpdatePeopleData, queryTest } = require('../services/peopleService');
+const { fetchAndUpdatePersonData, fetchAndUpdatePeopleData, queryTest, fetchPersonData } = require('../services/peopleService');
 
 
 routes.get('/test', async (req, res) => {
@@ -14,7 +14,12 @@ routes.get('/test', async (req, res) => {
 
 routes.get('/:person_id', async (req, res) => {
     try {
-        const person = await fetchAndUpdatePersonData(req.params.person_id);
+        let person;
+        if (req.query.nid == 'true') {
+            person = await fetchPersonData(req.params.person_id);
+        } else {
+            person = await fetchAndUpdatePersonData(req.params.person_id);
+        }
         res.status(200).json({ status: true, data: { person } });
     } catch (err) {
         console.log(err)
