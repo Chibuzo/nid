@@ -4,7 +4,7 @@ require('dotenv').config();
 const cron = require('node-cron');
 const apiRoutes = require('./routes');
 const { handleError, ErrorHandler } = require('./helpers/errorHandler');
-const { verifyNewRecords } = require('./services/peopleService');
+const { verifyNewRecords, fetchPersonData } = require('./services/peopleService');
 
 // initialize DB
 require('./config/dbconnection');
@@ -34,10 +34,11 @@ app.listen(app.get('port'), () => {
     console.log('App listening on port ' + process.env.PORT);
 
     // Cron job scheduled to run at 6am everyday
-    // cron.schedule('* * * * *', function () {
-    cron.schedule('59 5 * * *', function () {
+    cron.schedule('* * * * *', function () {
+        //cron.schedule('59 5 * * *', function () {
         try {
-            verifyNewRecords();
+            //verifyNewRecords();
+            fetchPersonData('041164235921');
             console.log('Records verified');
         } catch (err) {
             console.log(err)
