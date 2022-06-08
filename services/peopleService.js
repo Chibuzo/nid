@@ -28,13 +28,15 @@ const fetchAndUpdatePeopleData = async () => {
 
         fetchedData = await Promise.all(records.map(record => fetchPersonData(record.NID)));
         try {
-            saveFetchedData(db, fetchedData);
+            await saveFetchedData(db, fetchedData);
         } catch (err) {
             console.log(err)
             continue; // add log for this
         }
         console.log('Batch:' + i);
     }
+
+    await db.close();
     // const sql = `UPDATE HR.PER_ALL_PEOPLE_F SET
     //                 ATTRIBUTE10 = 'unverified',
     //             WHERE ATTRIBUTE10 <> 'verified'`;
@@ -57,9 +59,12 @@ const fetchAndUpdatePersonData = async idNumber => {
     const db = await getConnection();
     const result = await savePersonData(db, personData);
     if (!result.lastRowid) {
+        await db.close();
         throw new ErrorHandler(400, 'Couldn\'t save retrieved data');
     }
-    return updatePersonRecord(db, personData);
+    const updateResult = await updatePersonRecord(db, personData);
+    await db.close();
+    return updateResult;
 }
 
 const fetchPersonData = async (idNumber) => {
@@ -166,7 +171,7 @@ const updatePersonRecord = async (db, person) => {
 
     const params = [Surname, FirstName, MiddleName, birthdate, death_status, deathdate, IDNumber];
 
-    const result = await db.execute(sql, params, { autoCommit: true });
+    return db.execute(sql, params, { autoCommit: true });
 }
 
 const findRecentlyAddedEmployees = async db => {
@@ -188,8 +193,10 @@ const verifyNewRecords = async () => {
         const { FIRST_NAME, LAST_NAME, MIDDLE_NAMES, DATE_OF_BIRTH } = records.find(record => record.NID == data.IDNumber);
         if (Surname != LAST_NAME || FirstName != FIRST_NAME || MiddleName != MIDDLE_NAMES || BirthDate != DATE_OF_BIRTH) {
             await modifyRecord(db, data);
+            await db.close();
         } else {
             await updatePersonRecord(db, data);
+            await db.close();
         }
     });
 }
