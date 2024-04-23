@@ -34,13 +34,13 @@ app.listen(app.get('port'), () => {
     console.log('App listening on port ' + process.env.PORT);
 
     // Cron job scheduled to run at 6am everyday
-    cron.schedule('* * * * *', async function () {
-        //cron.schedule('59 5 * * *', function () {
+    // cron.schedule('* * * * *', async function () {
+    cron.schedule('59 5 * * *', function () {
         try {
-            //verifyNewRecords();
-            const data = await fetchPersonData('041164235921');
-            console.log(data);
-            console.log('Records verified');
+            verifyNewRecords();
+            // const data = await fetchPersonData('041164235921');
+            // console.log(data);
+            // console.log('Records verified');
         } catch (err) {
             console.log(err)
         }

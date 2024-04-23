@@ -83,7 +83,7 @@ const fetchPersonData = async (idNumber) => {
             const data = JSON.parse(res.data);
             if (data.Status !== 'Person Not Found') return data;
         } catch (err) {
-            console.log(err.response || 'error');
+            // console.log(err.response || 'error');
             const code = err.response && err.response.status || 400;
             const message = err.response && err.response.statusText || 'Unable to fetch data';
             throw new ErrorHandler(code, message)
@@ -144,7 +144,7 @@ const fetchUpdatedRecord = async idNumber => {
 }
 
 const updatePersonRecord = async (db, person) => {
-    const { IDNumber, Surname = '-', FirstName = '-', MiddleName = '-', BirthDate, DeathDate } = person;
+    const { IDNumber, Surname = '-', FirstName = '-', MiddleName = '-', BirthDate, status } = person;
     let death_status;
 
     let birthdate = null;
@@ -152,10 +152,10 @@ const updatePersonRecord = async (db, person) => {
         const birth_date = BirthDate.split('/');
         birthdate = `${birth_date[0]}-${MONTH[birth_date[1] - 1]}-${birth_date[2]}`;
     }
-    let deathdate = null;
-    if (DeathDate) {
-        const death_date = DeathDate.split('/');
-        deathdate = `${death_date[0]}-${MONTH[death_date[1] - 1]}-${death_date[2]}`;
+    //let deathdate = null;
+    if (status == 'Deceased') {
+        // const death_date = DeathDate.split('/');
+        // deathdate = `${death_date[0]}-${MONTH[death_date[1] - 1]}-${death_date[2]}`;
         death_status = 'dead';
     }
 
@@ -166,10 +166,9 @@ const updatePersonRecord = async (db, person) => {
                     DATE_OF_BIRTH = TO_DATE(:birthdate, 'DD-MON-YY'),
                     ATTRIBUTE10 = 'verified',
                     ATTRIBUTE11 = :death_status,
-                    DATE_OF_DEATH = TO_DATE(:date_of_death, 'DD-MON-YY')
                 WHERE NATIONAL_IDENTIFIER = :nid`;
 
-    const params = [Surname, FirstName, MiddleName, birthdate, death_status, deathdate, IDNumber];
+    const params = [Surname, FirstName, MiddleName, birthdate, death_status, IDNumber];
 
     return db.execute(sql, params, { autoCommit: true });
 }
@@ -184,9 +183,11 @@ const findRecentlyAddedEmployees = async db => {
 const verifyNewRecords = async () => {
     const db = await getConnection();
     const records = await findRecentlyAddedEmployees(db);
+    // find employee detail from NID server
     fetchedData = await Promise.all(records.map(record => fetchPersonData(record.NID)));
 
     fetchedData.forEach(async data => {
+        // save to a temp table
         await savePersonData(db, data);
 
         const { Surname, FirstName, MiddleName, BirthDate } = data;
