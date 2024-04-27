@@ -23,7 +23,6 @@ app.use((req, res, next) => {
     throw new ErrorHandler(404, "Route not found!");
 });
 
-
 app.use((err, req, res, next) => {
     handleError(err, res);
 });
@@ -35,14 +34,14 @@ app.listen(app.get('port'), () => {
 
     // Cron job scheduled to run at 6am everyday
     // cron.schedule('* * * * *', async function () {
-    cron.schedule('59 5 * * *', function () {
-        try {
-            verifyNewRecords();
-            // const data = await fetchPersonData('041164235921');
-            // console.log(data);
-            // console.log('Records verified');
-        } catch (err) {
-            console.log(err)
-        }
-    });
+    // cron.schedule('59 5 * * *', function () {
+    // try {
+    //     verifyNewRecords();
+    //     // const data = await fetchPersonData('041164235921');
+    //     // console.log(data);
+    //     // console.log('Records verified');
+    // } catch (err) {
+    //     console.log(err)
+    // }
+    // });
 });

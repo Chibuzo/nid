@@ -174,7 +174,11 @@ const updatePersonRecord = async (db, person) => {
 }
 
 const findRecentlyAddedEmployees = async db => {
-    const sql = `SELECT ${fields} FROM HR.PER_ALL_PEOPLE_F WHERE TO_CHAR(TO_DATE(sysdate - 1, 'DD-MON-YY')) = TO_CHAR(EFFECTIVE_START_DATE)`;
+    // const sql = `SELECT ${fields} FROM HR.PER_ALL_PEOPLE_F WHERE TO_CHAR(TO_DATE(sysdate - 90, 'DD-MON-YY')) = TO_CHAR(EFFECTIVE_START_DATE)`;
+    const sql = `SELECT * FROM HR.PER_ALL_PEOPLE_F
+WHERE EFFECTIVE_START_DATE BETWEEN TO_CHAR(TO_DATE('01-FEB-24', 'DD-MON-YY'))
+AND TO_CHAR(TO_DATE('27-APR-24', 'DD-MON-YY')) AND ATTRIBUTE10 <> 'verified'`;
+    // const sql = `SELECT ${fields} FROM HR.PER_ALL_PEOPLE_F WHERE TO_CHAR(TO_DATE(sysdate - 1, 'DD-MON-YY')) = TO_CHAR(EFFECTIVE_START_DATE)`;
     // const sql = `SELECT ${fields} FROM HR.PER_ALL_PEOPLE_F FETCH NEXT 3 ROWS ONLY`;
     const result = await db.execute(sql);
     return result.rows;
@@ -183,6 +187,8 @@ const findRecentlyAddedEmployees = async db => {
 const verifyNewRecords = async () => {
     const db = await getConnection();
     const records = await findRecentlyAddedEmployees(db);
+    console.log('fetch!');
+    console.log(records.length)
     // find employee detail from NID server
     fetchedData = await Promise.all(records.map(record => fetchPersonData(record.NID)));
 
@@ -194,12 +200,13 @@ const verifyNewRecords = async () => {
         const { FIRST_NAME, LAST_NAME, MIDDLE_NAMES, DATE_OF_BIRTH } = records.find(record => record.NID == data.IDNumber);
         if (Surname != LAST_NAME || FirstName != FIRST_NAME || MiddleName != MIDDLE_NAMES || BirthDate != DATE_OF_BIRTH) {
             await modifyRecord(db, data);
-            await db.close();
+            // await db.close();
         } else {
             await updatePersonRecord(db, data);
-            await db.close();
+            // await db.close();
         }
     });
+    return db;
 }
 
 const modifyRecord = async (db, newRecord) => {

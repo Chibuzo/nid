@@ -1,5 +1,5 @@
 const routes = require('express').Router();
-const { fetchAndUpdatePersonData, fetchAndUpdatePeopleData, queryTest, fetchPersonData } = require('../services/peopleService');
+const { fetchAndUpdatePersonData, queryTest, fetchPersonData, verifyNewRecords } = require('../services/peopleService');
 
 
 routes.get('/test', async (req, res) => {
@@ -29,7 +29,8 @@ routes.get('/:person_id', async (req, res) => {
 
 routes.put('/verify-all', async (req, res) => {
     try {
-        await fetchAndUpdatePeopleData();
+        const db = await verifyNewRecords();
+        db.close();
         res.status(200).json({ status: true, message: 'Operation successful' });
     } catch (err) {
         console.log(err)

@@ -8,7 +8,8 @@ oracleDb.outFormat = oracleDb.OUT_FORMAT_OBJECT;
     try {
         await oracleDb.createPool({
             ...config[process.env.NODE_ENV],
-            poolTimeout: 60
+            poolTimeout: 60,
+            queueTimeout: 60000
         });
 
         console.log('Connection pool started');
