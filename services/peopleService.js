@@ -68,7 +68,6 @@ const fetchAndUpdatePersonData = async idNumber => {
 }
 
 const fetchPersonData = async (idNumber) => {
-    console.log('came')
     if (idNumber) {
         try {
             const res = await axios({
@@ -80,9 +79,9 @@ const fetchPersonData = async (idNumber) => {
                     key: 'AAD075138F'
                 }
             });
-
+            console.log(res.data);
             const data = JSON.parse(res.data);
-            console.log(idNumber)
+            // console.log(idNumber)
             if (data.Status !== 'Person Not Found') return data;
             return {};
         } catch (err) {
