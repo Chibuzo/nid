@@ -174,19 +174,19 @@ const updatePersonRecord = async (db, person) => {
     return db.execute(sql, params, { autoCommit: true });
 }
 
-const findRecentlyAddedEmployees = async db => {
+const findRecentlyAddedEmployees = async (db, offset = null) => {
     const sql = `SELECT * FROM HR.PER_ALL_PEOPLE_F
     WHERE TO_CHAR(EFFECTIVE_START_DATE) BETWEEN TO_CHAR(TO_DATE('01-FEB-24', 'DD-MON-YY'))
-    AND TO_CHAR(TO_DATE('30-MAR-24', 'DD-MON-YY'))`;
+    AND TO_CHAR(TO_DATE('30-MAR-24', 'DD-MON-YY')) OFFSET :offset ROWS FETCH NEXT :limit ROWS ONLY`;
     // const sql = `SELECT ${fields} FROM HR.PER_ALL_PEOPLE_F WHERE TO_CHAR(TO_DATE(sysdate - 1, 'DD-MON-YY')) = TO_CHAR(EFFECTIVE_START_DATE)`;
     // const sql = `SELECT ${fields} FROM HR.PER_ALL_PEOPLE_F FETCH NEXT 3 ROWS ONLY`;
-    const result = await db.execute(sql);
+    const result = await db.execute(sql, [offset, 200]);
     return result.rows;
 }
 
-const verifyNewRecords = async () => {
+const verifyNewRecords = async (offset = null) => {
     const db = await getConnection();
-    const records = await findRecentlyAddedEmployees(db);
+    const records = await findRecentlyAddedEmployees(db, offset);
     console.log(`Records found: ${records.length}`);
     // find employee detail from NID server
     fetchedData = await Promise.all(records.map(async record => fetchPersonData(record.NATIONAL_IDENTIFIER)));
