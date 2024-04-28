@@ -190,10 +190,8 @@ const verifyNewRecords = async () => {
     const db = await getConnection();
     const records = await findRecentlyAddedEmployees(db);
     console.log(`Records found: ${records.length}`);
-    console.log({ records })
-    return;
     // find employee detail from NID server
-    fetchedData = await Promise.all(records.map(async record => fetchPersonData(record.NID)));
+    fetchedData = await Promise.all(records.map(async record => fetchPersonData(record.NATIONAL_IDENTIFIER)));
     console.log(`NID found records: ${fetchedData.length}`);
 
     fetchedData.forEach(async data => {
