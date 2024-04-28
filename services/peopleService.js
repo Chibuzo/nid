@@ -85,7 +85,7 @@ const fetchPersonData = async (idNumber) => {
             if (data.Status !== 'Person Not Found') return data;
             return {};
         } catch (err) {
-            // console.log(err.response || 'error');
+            console.log(err.response || 'error');
             const code = err.response && err.response.status || 400;
             const message = err.response && err.response.statusText || 'Unable to fetch data';
             throw new ErrorHandler(code, message)
