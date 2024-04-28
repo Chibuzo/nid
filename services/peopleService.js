@@ -194,9 +194,8 @@ const verifyNewRecords = async (offset = null) => {
         console.log(err)
     }
 
+    let n = 0;
     fetchedData.forEach(async data => {
-        // console.log({ data })
-        let n = 0;
         if (Object.keys(data).length === 0) return;
         // save to a temp table
 
