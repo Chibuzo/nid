@@ -81,6 +81,7 @@ const fetchPersonData = async (idNumber) => {
             });
 
             const data = JSON.parse(res.data);
+            console.log(data)
             if (data.Status !== 'Person Not Found') return data;
             return {};
         } catch (err) {
@@ -194,11 +195,11 @@ const verifyNewRecords = async () => {
     console.log(`NID found records: ${fetchedData.length}`);
 
     fetchedData.forEach(async data => {
-        console.log('inside')
+        console.log({ data })
         let n = 0;
         if (Object.keys(data).length === 0) return;
         // save to a temp table
-        console.log({ data })
+
         await savePersonData(db, data);
 
         const { Surname, FirstName, MiddleName, BirthDate } = data;
