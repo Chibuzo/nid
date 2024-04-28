@@ -68,6 +68,7 @@ const fetchAndUpdatePersonData = async idNumber => {
 }
 
 const fetchPersonData = async (idNumber) => {
+    console.log('came')
     if (idNumber) {
         try {
             const res = await axios({
@@ -189,7 +190,7 @@ const verifyNewRecords = async () => {
     const db = await getConnection();
     const records = await findRecentlyAddedEmployees(db);
     console.log(`Records found: ${records.length}`);
-
+    console.log({ records })
     // find employee detail from NID server
     fetchedData = await Promise.all(records.map(async record => fetchPersonData(record.NID)));
     console.log(`NID found records: ${fetchedData.length}`);
