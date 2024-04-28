@@ -80,7 +80,6 @@ const fetchPersonData = async (idNumber) => {
                 }
             });
             const data = JSON.parse(res.data);
-            console.log('good')
             if (data.Status !== 'Person Not Found') return data;
             return {};
         } catch (err) {
@@ -189,8 +188,12 @@ const verifyNewRecords = async (offset = null) => {
     const records = await findRecentlyAddedEmployees(db, offset);
     console.log(`Records found: ${records.length}`);
     // find employee detail from NID server
-    fetchedData = await Promise.all(records.map(async record => fetchPersonData(record.NATIONAL_IDENTIFIER)));
-    console.log(`NID found records: ${fetchedData.length}`);
+    try {
+        fetchedData = await Promise.all(records.map(async record => fetchPersonData(record.NATIONAL_IDENTIFIER)));
+        console.log(`NID found records: ${fetchedData.length}`);
+    } catch (err) {
+        console.log(err)
+    }
 
     fetchedData.forEach(async data => {
         // console.log({ data })
@@ -198,19 +201,24 @@ const verifyNewRecords = async (offset = null) => {
         if (Object.keys(data).length === 0) return;
         // save to a temp table
 
-        await savePersonData(db, data);
+        try {
+            await savePersonData(db, data);
 
-        const { Surname, FirstName, MiddleName, BirthDate } = data;
-        const { FIRST_NAME, LAST_NAME, MIDDLE_NAMES, DATE_OF_BIRTH } = records.find(record => record.NID == data.IDNumber);
-        if (Surname != LAST_NAME || FirstName != FIRST_NAME || MiddleName != MIDDLE_NAMES || BirthDate != DATE_OF_BIRTH) {
-            await modifyRecord(db, data);
-            // await db.close();
-        } else {
-            await updatePersonRecord(db, data);
-            // await db.close();
+            const { Surname, FirstName, MiddleName, BirthDate } = data;
+            const { FIRST_NAME, LAST_NAME, MIDDLE_NAMES, DATE_OF_BIRTH } = records.find(record => record.NID == data.IDNumber);
+            if (Surname != LAST_NAME || FirstName != FIRST_NAME || MiddleName != MIDDLE_NAMES || BirthDate != DATE_OF_BIRTH) {
+                await modifyRecord(db, data);
+                // await db.close();
+            } else {
+                await updatePersonRecord(db, data);
+                // await db.close();
+            }
+            console.log(`Verified record: ${n} with NID: ${data.IDNumber}`);
+            ++n;
+        } catch (err) {
+            console.log('econd');
+            console, log(err)
         }
-        console.log(`Verified record: ${n} with NID: ${data.IDNumber}`);
-        ++n;
     });
     return db;
 }
