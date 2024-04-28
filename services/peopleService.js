@@ -93,27 +93,28 @@ const fetchPersonData = async (idNumber) => {
     return {};
 }
 
-const savePersonData = async (db, { IDNumber, IdCollected, Status, Surname, FirstName, MiddleName, SexCode, BirthDate, DeathDate, NationalityCode, Nationality, Sex }) => {
+const savePersonData = async (db, { IDNumber, IdCollected, Status, Surname, FirstName, MiddleName, SexCode, BirthDate, NationalityCode, Nationality, Sex }) => {
     const sql = `INSERT INTO HR.NID_PEOPLE_TEMP
-                VALUES(:idnumber, :idcollection, :status, :surname, :firstname, :middlename, :sexcode, TO_DATE(:birthdate, 'DD-MON-YY'), TO_DATE(:deathdate, 'DD-MON-YY'), :nationalitycode, :nationality, :sex)`;
+                VALUES(:idnumber, :idcollection, :status, :surname, :firstname, :middlename, :sexcode, TO_DATE(:birthdate, 'DD-MON-YY'), ATTRIBUTE11, :nationalitycode, :nationality, :sex)`;
 
     let birthdate = null;
     if (BirthDate) {
         const birth_date = BirthDate.split('/');
         birthdate = `${birth_date[0]}-${MONTH[birth_date[1] - 1]}-${birth_date[2]}`;
     }
-    let deathdate = null;
-    if (DeathDate) {
-        const death_date = DeathDate.split('/');
-        deathdate = `${death_date[0]}-${MONTH[death_date[1] - 1]}-${death_date[2]}`;
+
+    let death_status;
+    if (Status == 'Deceased') {
+        death_status = 'dead';
     }
-    const params = [IDNumber, IdCollected, Status, Surname, FirstName, MiddleName, SexCode, birthdate, deathdate, NationalityCode, Nationality, Sex];
+    const params = [IDNumber, IdCollected, Status, Surname, FirstName, MiddleName, SexCode, birthdate, death_status, NationalityCode, Nationality, Sex];
     try {
         const result = await db.execute(sql, params, { autoCommit: true });
         return result;
     } catch (err) {
-        console.log('save person data: ')
+        console.log('Couldnt save person data: ')
         console.log(err)
+        db.close();
     }
     return null;
 }
@@ -156,8 +157,6 @@ const updatePersonRecord = async (db, person) => {
     }
     //let deathdate = null;
     if (status == 'Deceased') {
-        // const death_date = DeathDate.split('/');
-        // deathdate = `${death_date[0]}-${MONTH[death_date[1] - 1]}-${death_date[2]}`;
         death_status = 'dead';
     }
 
@@ -176,11 +175,10 @@ const updatePersonRecord = async (db, person) => {
 }
 
 const findRecentlyAddedEmployees = async db => {
-    // const sql = `SELECT ${fields} FROM HR.PER_ALL_PEOPLE_F WHERE TO_CHAR(TO_DATE(sysdate - 90, 'DD-MON-YY')) = TO_CHAR(EFFECTIVE_START_DATE)`;
-    const sql = `SELECT * FROM HR.PER_ALL_PEOPLE_F
-WHERE TO_CHAR(EFFECTIVE_START_DATE) BETWEEN TO_CHAR(TO_DATE('01-FEB-24', 'DD-MON-YY'))
-AND TO_CHAR(TO_DATE('27-APR-24', 'DD-MON-YY'))`;
-    // const sql = `SELECT ${fields} FROM HR.PER_ALL_PEOPLE_F WHERE TO_CHAR(TO_DATE(sysdate - 1, 'DD-MON-YY')) = TO_CHAR(EFFECTIVE_START_DATE)`;
+    //     const sql = `SELECT * FROM HR.PER_ALL_PEOPLE_F
+    // WHERE TO_CHAR(EFFECTIVE_START_DATE) BETWEEN TO_CHAR(TO_DATE('01-FEB-24', 'DD-MON-YY'))
+    // AND TO_CHAR(TO_DATE('27-APR-24', 'DD-MON-YY'))`;
+    const sql = `SELECT ${fields} FROM HR.PER_ALL_PEOPLE_F WHERE TO_CHAR(TO_DATE(sysdate - 1, 'DD-MON-YY')) = TO_CHAR(EFFECTIVE_START_DATE)`;
     // const sql = `SELECT ${fields} FROM HR.PER_ALL_PEOPLE_F FETCH NEXT 3 ROWS ONLY`;
     const result = await db.execute(sql);
     return result.rows;
@@ -189,12 +187,12 @@ AND TO_CHAR(TO_DATE('27-APR-24', 'DD-MON-YY'))`;
 const verifyNewRecords = async () => {
     const db = await getConnection();
     const records = await findRecentlyAddedEmployees(db);
-    console.log('fetch!');
-    console.log(records.length)
+
     // find employee detail from NID server
     fetchedData = await Promise.all(records.map(record => fetchPersonData(record.NID)));
 
     fetchedData.forEach(async data => {
+        let n = 0;
         if (Object.keys(data).length === 0) return;
         // save to a temp table
         await savePersonData(db, data);
@@ -208,12 +206,15 @@ const verifyNewRecords = async () => {
             await updatePersonRecord(db, data);
             // await db.close();
         }
+        console.log(`Verified record: ${n} with NID: ${data.IDNumber}`);
+        ++n;
     });
     return db;
 }
 
 const modifyRecord = async (db, newRecord) => {
-    const { IDNumber, Surname = '-', FirstName = '-', MiddleName = '-', BirthDate, DeathDate } = newRecord;
+    const { IDNumber, Surname = '-', FirstName = '-', MiddleName = '-', BirthDate, status } = newRecord;
+    let death_status;
 
     const old_record_criteria = "NATIONAL_IDENTIFIER = :nid AND TO_CHAR(EFFECTIVE_END_DATE) >= TO_CHAR(TO_DATE(sysdate, 'DD-MON-YY'))";
     const sql = `INSERT INTO HR.PER_ALL_PEOPLE_ERROR 
@@ -229,24 +230,23 @@ const modifyRecord = async (db, newRecord) => {
 
     // update record
     let birthdate = null;
-    let death_status;
     if (BirthDate) {
         const birth_date = BirthDate.split('/');
         birthdate = `${birth_date[0]}-${MONTH[birth_date[1] - 1]}-${birth_date[2]}`;
     }
-    let deathdate = null;
-    if (DeathDate) {
-        const death_date = DeathDate.split('/');
-        deathdate = `${death_date[0]}-${MONTH[death_date[1] - 1]}-${death_date[2]}`;
+
+    // let deathdate = null;
+    if (status == 'Deceased') {
+        // const death_date = DeathDate.split('/');
+        // deathdate = `${death_date[0]}-${MONTH[death_date[1] - 1]}-${death_date[2]}`;
         death_status = 'dead';
     }
 
-    const params = [Surname, FirstName, MiddleName, deathdate, birthdate, death_status, IDNumber];
+    const params = [Surname, FirstName, MiddleName, birthdate, death_status, IDNumber];
     const query = `UPDATE HR.PER_ALL_PEOPLE_F SET
                     LAST_NAME = :lastname,
                     FIRST_NAME = :firstname,
                     MIDDLE_NAMES = :middlename,
-                    DATE_OF_DEATH = TO_DATE(:deathdate, 'DD-MON-YY'),
                     DATE_OF_BIRTH = TO_DATE(:birthdate, 'DD-MON-YY'),
                     EFFECTIVE_START_DATE = TO_DATE((sysdate + 1), 'DD-MON-YY'),
                     EFFECTIVE_END_DATE = TO_DATE('31-DEC-4712', 'DD-MON-YYYY'),
