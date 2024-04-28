@@ -94,7 +94,7 @@ const fetchPersonData = async (idNumber) => {
 
 const savePersonData = async (db, { IDNumber, IdCollected, Status, Surname, FirstName, MiddleName, SexCode, BirthDate, NationalityCode, Nationality, Sex }) => {
     const sql = `INSERT INTO HR.NID_PEOPLE_TEMP
-                VALUES(:idnumber, :idcollection, :status, :surname, :firstname, :middlename, :sexcode, TO_DATE(:birthdate, 'DD-MON-YY'), :nationalitycode, :nationality, :sex)`;
+                VALUES(:idnumber, :idcollection, :status, :surname, :firstname, :middlename, :sexcode, TO_DATE(:birthdate, 'DD-MON-YY'), TO_DATE(:deathdate, 'DD-MON-YY'), :nationalitycode, :nationality, :sex)`;
 
     let birthdate = null;
     if (BirthDate) {
@@ -106,14 +106,13 @@ const savePersonData = async (db, { IDNumber, IdCollected, Status, Surname, Firs
     if (Status == 'Deceased') {
         death_status = 'dead';
     }
-    const params = [IDNumber, IdCollected, Status, Surname, FirstName, MiddleName, SexCode, birthdate, NationalityCode, Nationality, Sex];
+    const params = [IDNumber, IdCollected, Status, Surname, FirstName, MiddleName, SexCode, birthdate, birthdate, NationalityCode, Nationality, Sex];
     try {
         const result = await db.execute(sql, params, { autoCommit: true });
         return result;
     } catch (err) {
         console.log('Couldnt save person data: ')
         console.log(err)
-        db.close();
     }
     return null;
 }
