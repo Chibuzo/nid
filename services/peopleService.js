@@ -194,9 +194,11 @@ const verifyNewRecords = async () => {
     console.log(`NID found records: ${fetchedData.length}`);
 
     fetchedData.forEach(async data => {
+        console.log('inside')
         let n = 0;
         if (Object.keys(data).length === 0) return;
         // save to a temp table
+        console.log({ data })
         await savePersonData(db, data);
 
         const { Surname, FirstName, MiddleName, BirthDate } = data;
