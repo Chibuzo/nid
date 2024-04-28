@@ -191,6 +191,7 @@ const verifyNewRecords = async () => {
     const records = await findRecentlyAddedEmployees(db);
     console.log(`Records found: ${records.length}`);
     console.log({ records })
+    return;
     // find employee detail from NID server
     fetchedData = await Promise.all(records.map(async record => fetchPersonData(record.NID)));
     console.log(`NID found records: ${fetchedData.length}`);
