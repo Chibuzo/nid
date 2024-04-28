@@ -178,7 +178,7 @@ const findRecentlyAddedEmployees = async (db, offset = null) => {
     AND TO_CHAR(TO_DATE('30-MAR-24', 'DD-MON-YY')) OFFSET :offset ROWS FETCH NEXT :limit ROWS ONLY`;
     // const sql = `SELECT ${fields} FROM HR.PER_ALL_PEOPLE_F WHERE TO_CHAR(TO_DATE(sysdate - 1, 'DD-MON-YY')) = TO_CHAR(EFFECTIVE_START_DATE)`;
     // const sql = `SELECT ${fields} FROM HR.PER_ALL_PEOPLE_F FETCH NEXT 3 ROWS ONLY`;
-    const result = await db.execute(sql, [offset, 200]);
+    const result = await db.execute(sql, [offset, 1000]);
     return result.rows;
 }
 
