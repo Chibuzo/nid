@@ -68,6 +68,7 @@ const fetchAndUpdatePersonData = async idNumber => {
 }
 
 const fetchPersonData = async (idNumber) => {
+    console.log({ idNumber });
     if (idNumber) {
         try {
             const res = await axios({
