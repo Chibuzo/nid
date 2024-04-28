@@ -205,7 +205,7 @@ const verifyNewRecords = async (offset = null) => {
             await savePersonData(db, data);
 
             const { Surname, FirstName, MiddleName, BirthDate } = data;
-            const { FIRST_NAME, LAST_NAME, MIDDLE_NAMES, DATE_OF_BIRTH } = records.find(record => record.NID == data.IDNumber);
+            const { FIRST_NAME, LAST_NAME, MIDDLE_NAMES, DATE_OF_BIRTH } = records.find(record => record.NATIONAL_IDENTIFIER == data.IDNumber);
             if (Surname != LAST_NAME || FirstName != FIRST_NAME || MiddleName != MIDDLE_NAMES || BirthDate != DATE_OF_BIRTH) {
                 await modifyRecord(db, data);
                 // await db.close();
