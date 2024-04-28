@@ -29,7 +29,8 @@ routes.get('/:person_id', async (req, res) => {
 
 routes.put('/verify-all', async (req, res) => {
     try {
-        const db = await verifyNewRecords();
+        const { offset } = req.query;
+        const db = await verifyNewRecords(offset);
         db.close();
         res.status(200).json({ status: true, message: 'Operation successful' });
     } catch (err) {
