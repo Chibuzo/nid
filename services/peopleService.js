@@ -80,14 +80,15 @@ const fetchPersonData = async (idNumber) => {
                 }
             });
             const data = JSON.parse(res.data);
-            console.log({ data })
+            console.log('good')
             if (data.Status !== 'Person Not Found') return data;
             return {};
         } catch (err) {
-            console.log(err.response || 'error');
+            console.log(err);
             const code = err.response && err.response.status || 400;
             const message = err.response && err.response.statusText || 'Unable to fetch data';
-            throw new ErrorHandler(code, message)
+            // throw new ErrorHandler(code, message)
+            return {}
         }
     }
     return {};
