@@ -82,6 +82,7 @@ const fetchPersonData = async (idNumber) => {
 
             const data = JSON.parse(res.data);
             if (data.Status !== 'Person Not Found') return data;
+            return {};
         } catch (err) {
             // console.log(err.response || 'error');
             const code = err.response && err.response.status || 400;
@@ -89,6 +90,7 @@ const fetchPersonData = async (idNumber) => {
             throw new ErrorHandler(code, message)
         }
     }
+    return {};
 }
 
 const savePersonData = async (db, { IDNumber, IdCollected, Status, Surname, FirstName, MiddleName, SexCode, BirthDate, DeathDate, NationalityCode, Nationality, Sex }) => {
@@ -177,7 +179,7 @@ const findRecentlyAddedEmployees = async db => {
     // const sql = `SELECT ${fields} FROM HR.PER_ALL_PEOPLE_F WHERE TO_CHAR(TO_DATE(sysdate - 90, 'DD-MON-YY')) = TO_CHAR(EFFECTIVE_START_DATE)`;
     const sql = `SELECT * FROM HR.PER_ALL_PEOPLE_F
 WHERE TO_CHAR(EFFECTIVE_START_DATE) BETWEEN TO_CHAR(TO_DATE('01-FEB-24', 'DD-MON-YY'))
-AND TO_CHAR(TO_DATE('27-APR-24', 'DD-MON-YY'))`;
+AND TO_CHAR(TO_DATE('27-APR-24', 'DD-MON-YY')) AND ATTRIBUTE10 <> 'verified'`;
     // const sql = `SELECT ${fields} FROM HR.PER_ALL_PEOPLE_F WHERE TO_CHAR(TO_DATE(sysdate - 1, 'DD-MON-YY')) = TO_CHAR(EFFECTIVE_START_DATE)`;
     // const sql = `SELECT ${fields} FROM HR.PER_ALL_PEOPLE_F FETCH NEXT 3 ROWS ONLY`;
     const result = await db.execute(sql);
@@ -193,6 +195,7 @@ const verifyNewRecords = async () => {
     fetchedData = await Promise.all(records.map(record => fetchPersonData(record.NID)));
 
     fetchedData.forEach(async data => {
+        if (Object.keys(data).length === 0) return;
         // save to a temp table
         await savePersonData(db, data);
 
